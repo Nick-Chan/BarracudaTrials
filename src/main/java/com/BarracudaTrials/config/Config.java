@@ -1,7 +1,7 @@
-package com.BarracudaTrials;
+package com.BarracudaTrials.config;
 
+import com.BarracudaTrials.model.SpeedBoostDisplayMode;
 import net.runelite.client.config.Alpha;
-import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
 import net.runelite.client.config.ConfigSection;
@@ -9,13 +9,21 @@ import net.runelite.client.config.ConfigSection;
 import java.awt.*;
 
 @ConfigGroup("barracudatrials")
-public interface BarracudaTrialsConfig extends Config
+public interface Config extends net.runelite.client.config.Config
 {
     // Sections
     @ConfigSection(
+            name = "General",
+            description = "General Settings",
+            position = 0,
+            closedByDefault = false
+    )
+    String generalSection = "generalSection";
+
+    @ConfigSection(
             name = "Route Overlay",
             description = "Route line",
-            position = 0,
+            position = 1,
             closedByDefault = false
     )
     String routeSection = "routeSection";
@@ -23,7 +31,7 @@ public interface BarracudaTrialsConfig extends Config
     @ConfigSection(
             name = "Lost Supplies Overlay",
             description = "Lost Supplies",
-            position = 1,
+            position = 2,
             closedByDefault = false
     )
     String lostSuppliesSection = "lostSuppliesSection";
@@ -31,10 +39,48 @@ public interface BarracudaTrialsConfig extends Config
     @ConfigSection(
             name = "The Gwenith Glide",
             description = "Settings for The Gwenith Glide",
-            position = 2,
+            position = 3,
             closedByDefault = false
     )
     String theGwenithGlideSection = "theGwenithGlideSection";
+
+    // General config
+    @ConfigItem(
+            position = 0,
+            keyName = "showSpeedBoostOverlay",
+            name = "Show Speed Boost",
+            description = "Show a timer for the boat speed boost",
+            section = generalSection
+    )
+    default boolean showSpeedBoostOverlay()
+    {
+        return true;
+    }
+
+    @ConfigItem(
+            position = 1,
+            keyName = "speedBoostDisplayMode",
+            name = "Display Mode",
+            description = "Show the speed boost as a pie overlay or text",
+            section = generalSection
+    )
+    default SpeedBoostDisplayMode speedBoostDisplayMode()
+    {
+        return SpeedBoostDisplayMode.PIE;
+    }
+
+    @Alpha
+    @ConfigItem(
+            position = 2,
+            keyName = "speedBoostColor",
+            name = "Speed Boost Colour",
+            description = "Colour of the speed boost display",
+            section = generalSection
+    )
+    default Color speedBoostColor()
+    {
+        return new Color(0, 255, 0, 180);
+    }
 
     // Route config
     @ConfigItem(
@@ -47,6 +93,19 @@ public interface BarracudaTrialsConfig extends Config
     default boolean showRoute()
     {
         return true;
+    }
+
+    @Alpha
+    @ConfigItem(
+            position = 1,
+            keyName = "routeColor",
+            name = "Line colour",
+            description = "Colour of the route line",
+            section = routeSection
+    )
+    default Color routeColor()
+    {
+        return new Color(0, 255, 255, 160);
     }
 
     // Lost Supplies Config
@@ -112,9 +171,21 @@ public interface BarracudaTrialsConfig extends Config
         return true;
     }
 
-    @Alpha
     @ConfigItem(
             position = 1,
+            keyName = "crystalMotesSmallHighlight",
+            name = "Small Hitbox Highlight",
+            description = "Highlight Crystal Mote object only instead of hitbox",
+            section = theGwenithGlideSection
+    )
+    default boolean crystalMotesSmallHighlight()
+    {
+        return false;
+    }
+
+    @Alpha
+    @ConfigItem(
+            position = 2,
             keyName = "crystalMoteColor",
             name = "Crystal Outline colour",
             description = "Colour of the Crystal Mote highlight outline",

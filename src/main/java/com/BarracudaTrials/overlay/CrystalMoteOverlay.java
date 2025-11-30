@@ -1,5 +1,7 @@
-package com.BarracudaTrials;
+package com.BarracudaTrials.overlay;
 
+import com.BarracudaTrials.BarracudaTrialsPlugin;
+import com.BarracudaTrials.config.Config;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.runelite.api.Client;
@@ -24,11 +26,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Singleton
-public class BarracudaTrialsCrystalMoteOverlay extends Overlay
+public class CrystalMoteOverlay extends Overlay
 {
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
-    private final BarracudaTrialsConfig config;
+    private final Config config;
 
     // Load Crystal Mote positions for Gwenith Glide Marlin
     // Adjust path if your resource is named differently
@@ -36,9 +38,9 @@ public class BarracudaTrialsCrystalMoteOverlay extends Overlay
             loadCrystalMotes("/routes/thegwenithglid_marlin_wiki_crystalmote.json");
 
     @Inject
-    public BarracudaTrialsCrystalMoteOverlay(Client client,
-                                             BarracudaTrialsPlugin plugin,
-                                             BarracudaTrialsConfig config)
+    public CrystalMoteOverlay(Client client,
+                              BarracudaTrialsPlugin plugin,
+                              Config config)
     {
         this.client = client;
         this.plugin = plugin;
@@ -57,8 +59,7 @@ public class BarracudaTrialsCrystalMoteOverlay extends Overlay
             return null;
         }
 
-        // Optional: only for Marlin if that JSON is Marlin-only
-        if (plugin.getTrialTypeThisRun() != 4) // 4 = Marlin in your code
+        if (plugin.getTrialTypeThisRun() != 4) // 4 = Marlin
         {
             return null;
         }
@@ -71,8 +72,7 @@ public class BarracudaTrialsCrystalMoteOverlay extends Overlay
             return null;
         }
 
-        // 3x3 highlight
-        int tileRadius = 3;
+        int tileRadius = config.crystalMotesSmallHighlight() ? 1 : 5;
 
         // Highlight colour
         Color outline = config.crystalMoteColor();
@@ -135,7 +135,7 @@ public class BarracudaTrialsCrystalMoteOverlay extends Overlay
 
     private static List<CrystalMotePoint> loadCrystalMotes(String resourcePath)
     {
-        InputStream in = BarracudaTrialsCrystalMoteOverlay.class.getResourceAsStream(resourcePath);
+        InputStream in = CrystalMoteOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
         {
             return Collections.emptyList();

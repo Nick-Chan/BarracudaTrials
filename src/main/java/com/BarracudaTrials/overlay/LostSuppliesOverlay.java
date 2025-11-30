@@ -1,15 +1,13 @@
-package com.BarracudaTrials;
+package com.BarracudaTrials.overlay;
 
+import com.BarracudaTrials.BarracudaTrialsPlugin;
+import com.BarracudaTrials.config.Config;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.ObjectComposition;
 import net.runelite.api.Perspective;
-import net.runelite.api.events.GameObjectDespawned;
-import net.runelite.api.events.GameObjectSpawned;
-import net.runelite.api.events.WorldViewUnloaded;
-import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -29,11 +27,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
-public class BarracudaTrialsLostSuppliesOverlay extends Overlay
+public class LostSuppliesOverlay extends Overlay
 {
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
-    private final BarracudaTrialsConfig config;
+    private final Config config;
 
     private static final int VARBIT_SAILING_BT_OBJECTIVE_BASE = 18448;
 
@@ -52,9 +50,9 @@ public class BarracudaTrialsLostSuppliesOverlay extends Overlay
     }
 
     @Inject
-    public BarracudaTrialsLostSuppliesOverlay(Client client,
-                                              BarracudaTrialsPlugin plugin,
-                                              BarracudaTrialsConfig config)
+    public LostSuppliesOverlay(Client client,
+                               BarracudaTrialsPlugin plugin,
+                               Config config)
     {
         this.client = client;
         this.plugin = plugin;
@@ -171,7 +169,7 @@ public class BarracudaTrialsLostSuppliesOverlay extends Overlay
 
     private static Map<Integer, SupplyMeta> loadSuppliesMeta(String resourcePath)
     {
-        InputStream in = BarracudaTrialsLostSuppliesOverlay.class.getResourceAsStream(resourcePath);
+        InputStream in = LostSuppliesOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
         {
             return Collections.emptyMap();

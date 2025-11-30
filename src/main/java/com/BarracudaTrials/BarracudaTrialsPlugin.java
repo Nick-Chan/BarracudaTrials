@@ -9,6 +9,12 @@ Initial date: 28/11/2025
 
 package com.BarracudaTrials;
 
+import com.BarracudaTrials.config.Config;
+import com.BarracudaTrials.model.Ship;
+import com.BarracudaTrials.overlay.CrystalMoteOverlay;
+import com.BarracudaTrials.overlay.LostSuppliesOverlay;
+import com.BarracudaTrials.overlay.RouteOverlay;
+import com.BarracudaTrials.overlay.SpeedBoostOverlay;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
@@ -29,7 +35,6 @@ import net.runelite.api.events.WorldViewUnloaded;
 
 
 // debug
-import net.runelite.api.events.VarbitChanged;
 
 import javax.inject.Inject;
 import java.util.HashSet;
@@ -64,6 +69,14 @@ public class BarracudaTrialsPlugin extends Plugin
     // Lost Supplies currently in the scene
     private final Set<GameObject> lostSupplies = new HashSet<>();
 
+    // Speed boost
+    private Ship ship;
+    private int speedBoostTicksRemaining = 0;
+    private int speedBoostTicksMax = 0;
+    private static final int ICON_ID_LUFF = 7075;
+    private static final String CHAT_LUFF_SAIL = "You trim the sails, catching the wind for a burst of speed!";
+    private static final String CHAT_LUFF_STORED = "You release the wind mote for a burst of speed!";
+
     public Set<GameObject> getLostSupplies()
     {
         return lostSupplies;
@@ -74,28 +87,41 @@ public class BarracudaTrialsPlugin extends Plugin
         return currentRouteOrder;
     }
 
+    public int getSpeedBoostTicksRemaining()
+    {
+        return speedBoostTicksRemaining;
+    }
+
+    public int getSpeedBoostTicksMax()
+    {
+        return speedBoostTicksMax;
+    }
+
     @Inject
     private Client client;
 
     @Inject
-    private BarracudaTrialsConfig config;
+    private Config config;
 
     @Inject
     private OverlayManager overlayManager;
 
     @Inject
-    private BarracudaTrialsRouteOverlay routeOverlay;
+    private RouteOverlay routeOverlay;
 
     @Inject
-    private BarracudaTrialsLostSuppliesOverlay lostSuppliesOverlay;
+    private LostSuppliesOverlay lostSuppliesOverlay;
 
     @Inject
-    private BarracudaTrialsCrystalMoteOverlay crystalMoteOverlay;
+    private CrystalMoteOverlay crystalMoteOverlay;
+
+    @Inject
+    private SpeedBoostOverlay speedBoostOverlay;
 
     @Provides
-    BarracudaTrialsConfig provideConfig(ConfigManager configManager)
+    Config provideConfig(ConfigManager configManager)
     {
-        return configManager.getConfig(BarracudaTrialsConfig.class);
+        return configManager.getConfig(Config.class);
     }
 
     @Override
@@ -104,6 +130,11 @@ public class BarracudaTrialsPlugin extends Plugin
         overlayManager.add(routeOverlay);
         overlayManager.add(lostSuppliesOverlay);
         overlayManager.add(crystalMoteOverlay);
+        overlayManager.add(speedBoostOverlay);
+
+        ship = null;
+        speedBoostTicksRemaining = 0;
+        speedBoostTicksMax = 0;
     }
 
     @Override
@@ -112,6 +143,11 @@ public class BarracudaTrialsPlugin extends Plugin
         overlayManager.remove(routeOverlay);
         overlayManager.remove(lostSuppliesOverlay);
         overlayManager.remove(crystalMoteOverlay);
+        overlayManager.remove(speedBoostOverlay);
+
+        ship = null;
+        speedBoostTicksRemaining = 0;
+        speedBoostTicksMax = 0;
     }
 
     @Subscribe
@@ -129,10 +165,24 @@ public class BarracudaTrialsPlugin extends Plugin
         GameObject o = e.getGameObject();
 
         // Only track objects we know about from the Lost Supplies overlay metadata
-        if (BarracudaTrialsLostSuppliesOverlay.hasMetaForId(o.getId()))
+        if (LostSuppliesOverlay.hasMetaForId(o.getId()))
         {
             lostSupplies.add(o);
         }
+
+        if (client.getLocalPlayer() == null)
+        {
+            return;
+        }
+
+        int wvId = client.getLocalPlayer().getWorldView().getId();
+
+        if (ship == null || ship.getWorldViewId() != wvId)
+        {
+            ship = new Ship(wvId);
+        }
+
+        ship.updateFromGameObject(e.getGameObject());
     }
 
     @Subscribe
@@ -145,6 +195,11 @@ public class BarracudaTrialsPlugin extends Plugin
                 o.getId() == gone.getId()
                         && o.getWorldLocation().equals(gone.getWorldLocation())
         );
+
+        if (ship != null)
+        {
+            ship.removeGameObject(e.getGameObject());
+        }
     }
 
     @Subscribe
@@ -198,10 +253,20 @@ public class BarracudaTrialsPlugin extends Plugin
             seenCrystal7 = false;
             advancedAfterBox = false;
             lastBoxVarbitValue = -1;
+
+            speedBoostTicksRemaining = 0;
+            speedBoostTicksMax = 0;
         }
 
         lastTimeStart = timeStart;
         lastCompletedCount = completedCount;
+
+        // Speed boost countdown
+        if (speedBoostTicksRemaining > 0)
+        {
+            speedBoostTicksRemaining--;
+        }
+
     }
 
     @Subscribe
@@ -249,6 +314,24 @@ public class BarracudaTrialsPlugin extends Plugin
 
         String message = Text.removeTags(event.getMessage());
 
+        // Speed boost trigger messages
+        if (CHAT_LUFF_SAIL.equals(message) || CHAT_LUFF_STORED.equals(message))
+        {
+            int durationTicks = -1;
+            if (ship != null && ship.isValid())
+            {
+                durationTicks = ship.getSpeedBoostDurationTicks();
+            }
+            if (durationTicks <= 0)
+            {
+                durationTicks = 1; // fallback
+            }
+
+            speedBoostTicksRemaining = durationTicks;
+            speedBoostTicksMax = durationTicks;
+        }
+
+        // Gwenith Glide
         if (!message.startsWith("You imbue the Crystal of "))
         {
             return;

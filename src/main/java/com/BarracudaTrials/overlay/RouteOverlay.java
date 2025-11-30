@@ -1,5 +1,7 @@
-package com.BarracudaTrials;
+package com.BarracudaTrials.overlay;
 
+import com.BarracudaTrials.BarracudaTrialsPlugin;
+import com.BarracudaTrials.config.Config;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.coords.LocalPoint;
@@ -23,14 +25,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
 @Singleton
-public class BarracudaTrialsRouteOverlay extends Overlay
+public class RouteOverlay extends Overlay
 {
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
-    private final BarracudaTrialsConfig config;
+    private final Config config;
 
     @Inject
-    public BarracudaTrialsRouteOverlay(Client client, BarracudaTrialsPlugin plugin, BarracudaTrialsConfig config)
+    public RouteOverlay(Client client, BarracudaTrialsPlugin plugin, Config config)
     {
         this.client = client;
         this.plugin = plugin;
@@ -56,7 +58,13 @@ public class BarracudaTrialsRouteOverlay extends Overlay
         }
 
         graphics.setStroke(new BasicStroke(2.0f));
-        graphics.setColor(new Color(0, 255, 255, 160));
+
+        Color routeColor = config.routeColor();
+        if (routeColor == null)
+        {
+            routeColor = new Color(0, 255, 255, 160);
+        }
+        graphics.setColor(routeColor);
 
         net.runelite.api.Point lastCanvas = null;
 
@@ -165,7 +173,7 @@ public class BarracudaTrialsRouteOverlay extends Overlay
     // Load a route from JSON resource
     private static java.util.List<RegionTile> loadRoute(String resourcePath)
     {
-        InputStream in = BarracudaTrialsRouteOverlay.class.getResourceAsStream(resourcePath);
+        InputStream in = RouteOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
         {
             return java.util.Collections.emptyList();
