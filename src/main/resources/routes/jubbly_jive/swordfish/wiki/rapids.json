@@ -1,0 +1,156 @@
+[
+  {
+    "regionId": 9519,
+    "regionX": 60,
+    "regionY": 14,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9519,
+    "regionX": 34,
+    "regionY": 10,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9518,
+    "regionX": 5,
+    "regionY": 63,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9262,
+    "regionX": 54,
+    "regionY": 45,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9262,
+    "regionX": 38,
+    "regionY": 31,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9262,
+    "regionX": 11,
+    "regionY": 29,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9006,
+    "regionX": 50,
+    "regionY": 34,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9006,
+    "regionX": 24,
+    "regionY": 46,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9006,
+    "regionX": 8,
+    "regionY": 56,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9007,
+    "regionX": 2,
+    "regionY": 10,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9007,
+    "regionX": 2,
+    "regionY": 10,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9006,
+    "regionX": 40,
+    "regionY": 55,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9006,
+    "regionX": 59,
+    "regionY": 57,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9263,
+    "regionX": 21,
+    "regionY": 8,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9262,
+    "regionX": 37,
+    "regionY": 62,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9262,
+    "regionX": 54,
+    "regionY": 45,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9262,
+    "regionX": 57,
+    "regionY": 30,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9262,
+    "regionX": 53,
+    "regionY": 16,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9517,
+    "regionX": 29,
+    "regionY": 59,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9517,
+    "regionX": 59,
+    "regionY": 58,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9774,
+    "regionX": 3,
+    "regionY": 27,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 9774,
+    "regionX": 2,
+    "regionY": 54,
+    "z": 0,
+    "order": 2
+  }
+]

@@ -1,0 +1,182 @@
+[
+  {
+    "varbit": 0,
+    "objectId": 58982,
+    "order": 1,
+    "index": 1
+  },
+  {
+    "varbit": 1,
+    "objectId": 58983,
+    "order": 1,
+    "index": 2
+  },
+  {
+    "varbit": 2,
+    "objectId": 58984,
+    "order": 1,
+    "index": 3
+  },
+  {
+    "varbit": 3,
+    "objectId": 58985,
+    "order": 1,
+    "index": 4
+  },
+  {
+    "varbit": 4,
+    "objectId": 58986,
+    "order": 1,
+    "index": 5
+  },
+  {
+    "varbit": 6,
+    "objectId": 58988,
+    "order": 1,
+    "index": 6
+  },
+  {
+    "varbit": 7,
+    "objectId": 58989,
+    "order": 1,
+    "index": 7
+  },
+  {
+    "varbit": 8,
+    "objectId": 58990,
+    "order": 1,
+    "index": 8
+  },
+  {
+    "varbit": 9,
+    "objectId": 58991,
+    "order": 1,
+    "index": 9
+  },
+  {
+    "varbit": 10,
+    "objectId": 58992,
+    "order": 1,
+    "index": 10
+  },
+  {
+    "varbit": 11,
+    "objectId": 58993,
+    "order": 1,
+    "index": 11
+  },
+  {
+    "varbit": 12,
+    "objectId": 58994,
+    "order": 2,
+    "index": 12
+  },
+  {
+    "varbit": 13,
+    "objectId": 58995,
+    "order": 2,
+    "index": 13
+  },
+  {
+    "varbit": 14,
+    "objectId": 58996,
+    "order": 2,
+    "index": 14
+  },
+  {
+    "varbit": 15,
+    "objectId": 58997,
+    "order": 2,
+    "index": 15
+  },
+  {
+    "varbit": 25,
+    "objectId": 59007,
+    "order": 2,
+    "index": 16
+  },
+  {
+    "varbit": 27,
+    "objectId": 59009,
+    "order": 2,
+    "index": 17
+  },
+  {
+    "varbit": 28,
+    "objectId": 59010,
+    "order": 2,
+    "index": 18
+  },
+  {
+    "varbit": 5,
+    "objectId": 58987,
+    "order": 2,
+    "index": 19
+  },
+  {
+    "varbit": 29,
+    "objectId": 59011,
+    "order": 2,
+    "index": 20
+  },
+  {
+    "varbit": 22,
+    "objectId": 59004,
+    "order": 3,
+    "index": 21
+  },
+  {
+    "varbit": 23,
+    "objectId": 59005,
+    "order": 3,
+    "index": 22
+  },
+  {
+    "varbit": 24,
+    "objectId": 59006,
+    "order": 3,
+    "index": 23
+  },
+  {
+    "varbit": 16,
+    "objectId": 58998,
+    "order": 3,
+    "index": 24
+  },
+  {
+    "varbit": 17,
+    "objectId": 58999,
+    "order": 3,
+    "index": 25
+  },
+  {
+    "varbit": 18,
+    "objectId": 59000,
+    "order": 3,
+    "index": 26
+  },
+  {
+    "varbit": 19,
+    "objectId": 59001,
+    "order": 3,
+    "index": 27
+  },
+  {
+    "varbit": 20,
+    "objectId": 59002,
+    "order": 3,
+    "index": 28
+  },
+  {
+    "varbit": 21,
+    "objectId": 59003,
+    "order": 3,
+    "index": 29
+  },
+  {
+    "varbit": 26,
+    "objectId": 59008,
+    "order": 3,
+    "index": 30
+  }
+]

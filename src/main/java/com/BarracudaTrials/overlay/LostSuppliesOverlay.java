@@ -2,6 +2,10 @@ package com.BarracudaTrials.overlay;
 
 import com.BarracudaTrials.BarracudaTrialsPlugin;
 import com.BarracudaTrials.config.Config;
+import com.BarracudaTrials.model.Difficulty;
+import com.BarracudaTrials.model.Trial;
+import com.BarracudaTrials.model.RouteVariant;
+import com.BarracudaTrials.util.RouteResources;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.runelite.api.Client;
@@ -34,19 +38,17 @@ public class LostSuppliesOverlay extends Overlay
     private final Config config;
 
     private static final int VARBIT_SAILING_BT_OBJECTIVE_BASE = 18448;
+    private static final int MAX_OBJECTIVES = 96;
 
-    // Metadata per objectId loaded from JSON: objectId -> SupplyMeta
-    private static final Map<Integer, SupplyMeta> MARLIN_SUPPLIES_META =
-            loadSuppliesMeta("/routes/thegwenithglide_marlin_wiki_supplies.json");
+    // Cache
+    private static final Map<String, Map<Integer, SupplyMeta>> SUPPLIES_CACHE = new HashMap<>();
 
-    static boolean hasMetaForId(int objectId)
+    // Global cache
+    private static final Map<Integer, SupplyMeta> ALL_SUPPLIES_META = new HashMap<>();
+
+    public static boolean hasMetaForId(int objectId)
     {
-        return MARLIN_SUPPLIES_META.containsKey(objectId);
-    }
-
-    private SupplyMeta getSupplyMetaForObject(int objectId)
-    {
-        return MARLIN_SUPPLIES_META.get(objectId);
+        return ALL_SUPPLIES_META.containsKey(objectId);
     }
 
     @Inject
@@ -66,7 +68,13 @@ public class LostSuppliesOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D g)
     {
-        if (!plugin.isTrialRunning() || !config.highlightLostSupplies())
+        if (!plugin.isInTrial() || !config.highlightLostSupplies())
+        {
+            return null;
+        }
+
+        Map<Integer, SupplyMeta> suppliesMeta = getCurrentSuppliesMeta();
+        if (suppliesMeta.isEmpty())
         {
             return null;
         }
@@ -75,20 +83,20 @@ public class LostSuppliesOverlay extends Overlay
 
         for (GameObject o : plugin.getLostSupplies())
         {
-            SupplyMeta meta = getSupplyMetaForObject(o.getId());
+            SupplyMeta meta = suppliesMeta.get(o.getId());
             if (meta == null)
             {
                 continue;
             }
 
-            // Only crates belonging to this route order
+            // Only crates belonging to this route segment/order
             if (meta.order != currentOrder)
             {
                 continue;
             }
 
             int objectiveIndex = meta.varbit;
-            if (objectiveIndex < 0 || objectiveIndex >= 96)
+            if (objectiveIndex < 0 || objectiveIndex >= MAX_OBJECTIVES)
             {
                 continue;
             }
@@ -96,6 +104,7 @@ public class LostSuppliesOverlay extends Overlay
             int objectiveVarbitId = VARBIT_SAILING_BT_OBJECTIVE_BASE + objectiveIndex;
             int objectiveState = client.getVarbitValue(objectiveVarbitId);
 
+            // If varbit == 0, this Lost Supply has been collected
             if (objectiveState == 0)
             {
                 continue;
@@ -140,6 +149,40 @@ public class LostSuppliesOverlay extends Overlay
         }
 
         return null;
+    }
+
+    private Map<Integer, SupplyMeta> getCurrentSuppliesMeta()
+    {
+        Trial trial = plugin.getCurrentTrial();
+        Difficulty difficulty = plugin.getCurrentDifficulty();
+
+        if (trial == null || difficulty == null)
+        {
+            return Collections.emptyMap();
+        }
+
+        RouteVariant variant = getActiveVariant(trial, difficulty);
+
+        return getSuppliesMeta(trial, difficulty, variant);
+    }
+
+    private static Map<Integer, SupplyMeta> getSuppliesMeta(
+            Trial trial,
+            Difficulty difficulty,
+            RouteVariant variant
+    )
+    {
+        String key = trial.name() + "-" + difficulty.name() + "-" + variant.name();
+
+        return SUPPLIES_CACHE.computeIfAbsent(key, k -> {
+            String path = RouteResources.buildSuppliesPath(trial, difficulty, variant);
+            Map<Integer, SupplyMeta> map = loadSuppliesMeta(path);
+
+            // Merge into global objectId -> meta map so hasMetaForId works
+            ALL_SUPPLIES_META.putAll(map);
+
+            return map;
+        });
     }
 
     // JSON mapping
@@ -196,5 +239,50 @@ public class LostSuppliesOverlay extends Overlay
         {
             return Collections.emptyMap();
         }
+    }
+
+    private RouteVariant getActiveVariant(Trial trial, Difficulty difficulty)
+    {
+        switch (trial)
+        {
+            case GWENITH_GLIDE:
+                switch (difficulty)
+                {
+                    case SWORDFISH:
+                        return config.gwGlideSwordfishVariant();
+                    case SHARK:
+                        return config.gwGlideSharkVariant();
+                    case MARLIN:
+                        return config.gwGlideMarlinVariant();
+                }
+                break;
+
+            case JUBBLY_JIVE:
+                switch (difficulty)
+                {
+                    case SWORDFISH:
+                        return config.jubblySwordfishVariant();
+                    case SHARK:
+                        return config.jubblySharkVariant();
+                    case MARLIN:
+                        return config.jubblyMarlinVariant();
+                }
+                break;
+
+            case TEMPOR_TANTRUM:
+                switch (difficulty)
+                {
+                    case SWORDFISH:
+                        return config.temporSwordfishVariant();
+                    case SHARK:
+                        return config.temporSharkVariant();
+                    case MARLIN:
+                        return config.temporMarlinVariant();
+                }
+                break;
+        }
+
+        // Fallback
+        return RouteVariant.WIKI;
     }
 }

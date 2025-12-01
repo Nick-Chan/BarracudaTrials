@@ -1,0 +1,44 @@
+[
+  {
+    "regionId": 9014,
+    "regionX": 19,
+    "regionY": 19,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 8242,
+    "regionX": 63,
+    "regionY": 35,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 8499,
+    "regionX": 31,
+    "regionY": 29,
+    "z": 0,
+    "order": 1
+  },
+  {
+    "regionId": 9014,
+    "regionX": 28,
+    "regionY": 63,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 8498,
+    "regionX": 27,
+    "regionY": 37,
+    "z": 0,
+    "order": 2
+  },
+  {
+    "regionId": 8759,
+    "regionX": 27,
+    "regionY": 14,
+    "z": 0,
+    "order": 3
+  }
+]

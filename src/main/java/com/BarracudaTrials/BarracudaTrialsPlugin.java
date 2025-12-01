@@ -11,6 +11,8 @@ package com.BarracudaTrials;
 
 import com.BarracudaTrials.config.Config;
 import com.BarracudaTrials.model.Ship;
+import com.BarracudaTrials.model.Trial;
+import com.BarracudaTrials.model.Difficulty;
 import com.BarracudaTrials.overlay.CrystalMoteOverlay;
 import com.BarracudaTrials.overlay.LostSuppliesOverlay;
 import com.BarracudaTrials.overlay.RouteOverlay;
@@ -59,11 +61,19 @@ public class BarracudaTrialsPlugin extends Plugin
     private boolean seenCrystal7 = false;
     private boolean advancedAfterBox = false;
     private int lastBoxVarbitValue = -1;
+    private Trial currentTrial = null;
+    private boolean inTrial = false;
+
+    public boolean isInTrial()
+    {
+        return inTrial;
+    }
 
     // Gwenith Glide IDs
-    private static final int VARBIT_SAILING_BT_IN_TRIAL_GWENITH_GLIDE = 18410;
-    private static final int VARP_SAILING_BT_TIME_GWENITH_GLIDE_START = 4987;
-    private static final int VARP_SAILING_BT_TRIAL_GWENITH_GLIDE_COMPLETED = 5000;
+    private static final int VARBIT_SAILING_BT_IN_TRIAL = 18410;
+
+    private static final int VARP_SAILING_BT_TIME_START = 4987;
+    private static final int VARP_SAILING_BT_TRIAL_COMPLETED = 5000;
     private static final int VARBIT_LOST_SUPPLY_TRIGGER = 18524;
 
     // Lost Supplies currently in the scene
@@ -205,9 +215,9 @@ public class BarracudaTrialsPlugin extends Plugin
     @Subscribe
     public void onGameTick(GameTick event)
     {
-        int timeStart = client.getVarpValue(VARP_SAILING_BT_TIME_GWENITH_GLIDE_START);
-        int completedCount = client.getVarpValue(VARP_SAILING_BT_TRIAL_GWENITH_GLIDE_COMPLETED);
-        int trialTypeVar = client.getVarbitValue(VARBIT_SAILING_BT_IN_TRIAL_GWENITH_GLIDE);
+        int timeStart = client.getVarpValue(VARP_SAILING_BT_TIME_START);
+        int completedCount = client.getVarpValue(VARP_SAILING_BT_TRIAL_COMPLETED);
+        int trialTypeVar = client.getVarbitValue(VARBIT_SAILING_BT_IN_TRIAL);
 
         // Start of trial
         if (!trialRunning && lastTimeStart == 0 && timeStart != 0)
@@ -245,6 +255,9 @@ public class BarracudaTrialsPlugin extends Plugin
         if (trialRunning && lastTimeStart != 0 && timeStart == 0)
         {
             trialRunning = false;
+            inTrial = false;
+            currentTrial = null;
+
             currentSplit = 0;
             trialTypeThisRun = 0;
             totalSplitsThisRun = 0;
@@ -272,10 +285,10 @@ public class BarracudaTrialsPlugin extends Plugin
     @Subscribe
     public void onVarbitChanged(VarbitChanged event)
     {
-        /*
+
         int id = event.getVarbitId();
         int value = event.getValue();
-
+/*
         client.addChatMessage(
                 ChatMessageType.GAMEMESSAGE,
                 "",
@@ -314,6 +327,23 @@ public class BarracudaTrialsPlugin extends Plugin
 
         String message = Text.removeTags(event.getMessage());
 
+        // Current trial detect
+        if (message.equals("You prepare to begin the Gwenith Glide...") || message.equals("You reset your progress in the Gwenith Glide."))
+        {
+            currentTrial = Trial.GWENITH_GLIDE;
+            inTrial = true;
+        }
+        else if (message.equals("You prepare to begin the Jubbly Jive...") || message.equals("You reset your progress in the Jubbly Jive."))
+        {
+            currentTrial = Trial.JUBBLY_JIVE;
+            inTrial = true;
+        }
+        else if (message.equals("You prepare to begin the Tempor Tantrum...") || message.equals("You reset your progress in the Tempor Tantrum."))
+        {
+            currentTrial = Trial.TEMPOR_TANTRUM;
+            inTrial = true;
+        }
+
         // Speed boost trigger messages
         if (CHAT_LUFF_SAIL.equals(message) || CHAT_LUFF_STORED.equals(message))
         {
@@ -332,56 +362,97 @@ public class BarracudaTrialsPlugin extends Plugin
         }
 
         // Gwenith Glide
-        if (!message.startsWith("You imbue the Crystal of "))
+        if (currentTrial == Trial.GWENITH_GLIDE)
         {
-            return;
+            // Original Gwenith Glide logic
+            if (!message.startsWith("You imbue the Crystal of "))
+            {
+                return;
+            }
+
+            // Extract "(x/8)" part
+            int openIdx = message.indexOf('(');
+            int slashIdx = message.indexOf('/', openIdx);
+            int closeIdx = message.indexOf(')', slashIdx);
+
+            if (openIdx == -1 || slashIdx == -1 || closeIdx == -1)
+            {
+                return;
+            }
+
+            int imbueNumber;
+            try
+            {
+                String numStr = message.substring(openIdx + 1, slashIdx);
+                imbueNumber = Integer.parseInt(numStr);
+            }
+            catch (NumberFormatException e)
+            {
+                return;
+            }
+
+            if (imbueNumber < 1 || imbueNumber > 8 || imbueNumber <= currentSplit)
+            {
+                return;
+            }
+
+            currentSplit = imbueNumber;
+
+            if (imbueNumber <= 6)
+            {
+                currentRouteOrder++;
+            }
+            else if (imbueNumber == 7)
+            {
+                currentRouteOrder++;
+                seenCrystal7 = true;
+                advancedAfterBox = false;
+                lastBoxVarbitValue = client.getVarbitValue(VARBIT_LOST_SUPPLY_TRIGGER);
+            }
         }
-
-        if (!trialRunning)
+        else if (currentTrial == Trial.JUBBLY_JIVE)
         {
-            return;
-        }
+            if (!message.endsWith("balloon toads. Time to lure some jubblies!"))
+            {
+                return;
+            }
 
-        // Extract "(x/8)" part
-        int openIdx = message.indexOf('(');
-        int slashIdx = message.indexOf('/', openIdx);
-        int closeIdx = message.indexOf(')', slashIdx);
-
-        if (openIdx == -1 || slashIdx == -1 || closeIdx == -1)
-        {
-            return;
-        }
-
-        int imbueNumber;
-        try
-        {
-            String numStr = message.substring(openIdx + 1, slashIdx);
-            imbueNumber = Integer.parseInt(numStr);
-        }
-        catch (NumberFormatException e)
-        {
-            return;
-        }
-
-        if (imbueNumber < 1 || imbueNumber > 8 || imbueNumber <= currentSplit)
-        {
-            return;
-        }
-
-        currentSplit = imbueNumber;
-
-        if (imbueNumber <= 6)
-        {
+            currentSplit++;
             currentRouteOrder++;
-        }
-        else if (imbueNumber == 7)
-        {
-            currentRouteOrder++;
-            seenCrystal7 = true;
-            advancedAfterBox = false;
-            lastBoxVarbitValue = client.getVarbitValue(VARBIT_LOST_SUPPLY_TRIGGER);
         }
     }
+
+    // Trial / Difficulty for overlays
+    public Trial getCurrentTrial()
+    {
+        if (!inTrial)
+        {
+            return null;
+        }
+
+        return currentTrial;
+    }
+
+    public Difficulty getCurrentDifficulty()
+    {
+        if (!inTrial)
+        {
+            return null;
+        }
+
+        switch (trialTypeThisRun)
+        {
+            case 2:
+                return Difficulty.SWORDFISH;
+            case 3:
+                return Difficulty.SHARK;
+            case 4:
+                return Difficulty.MARLIN;
+            default:
+                return null;
+        }
+    }
+
 
     // Overlay
     public boolean isTrialRunning()

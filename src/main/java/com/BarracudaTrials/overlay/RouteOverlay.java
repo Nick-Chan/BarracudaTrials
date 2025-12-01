@@ -2,6 +2,12 @@ package com.BarracudaTrials.overlay;
 
 import com.BarracudaTrials.BarracudaTrialsPlugin;
 import com.BarracudaTrials.config.Config;
+import com.BarracudaTrials.model.Difficulty;
+import com.BarracudaTrials.model.RouteVariant;
+import com.BarracudaTrials.model.Trial;
+import com.BarracudaTrials.util.RouteResources;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import net.runelite.api.Client;
 import net.runelite.api.Perspective;
 import net.runelite.api.coords.LocalPoint;
@@ -14,14 +20,13 @@ import net.runelite.client.ui.overlay.OverlayPriority;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.awt.*;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -31,8 +36,11 @@ public class RouteOverlay extends Overlay
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
 
+    // simple in-memory cache: key -> list of tiles
+    private static final Map<String, List<RegionTile>> ROUTE_CACHE = new HashMap<>();
+
     @Inject
-    public RouteOverlay(Client client, BarracudaTrialsPlugin plugin, Config config)
+    public RouteOverlay(Client client, BarracudaTrialsPlugin plugin, Config  config)
     {
         this.client = client;
         this.plugin = plugin;
@@ -46,12 +54,12 @@ public class RouteOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (!config.showRoute() || !plugin.isTrialRunning())
+        if (!config.showRoute() || !plugin.isInTrial())
         {
             return null;
         }
 
-        java.util.List<RegionTile> route = getCurrentRegionRoute();
+        List<RegionTile> route = getCurrentRegionRoute();
         if (route == null || route.size() < 2)
         {
             return null;
@@ -77,7 +85,8 @@ public class RouteOverlay extends Overlay
                 continue;
             }
 
-            net.runelite.api.Point canvasPoint = Perspective.localToCanvas(client, lp, client.getPlane());
+            net.runelite.api.Point canvasPoint =
+                    Perspective.localToCanvas(client, lp, client.getPlane());
             if (canvasPoint == null)
             {
                 continue;
@@ -97,44 +106,52 @@ public class RouteOverlay extends Overlay
         return null;
     }
 
-
-    private static final java.util.List<RegionTile> THE_GWENITH_GLIDE_SWORDFISH_ROUTE =
-            loadRoute("/routes/the_gwenith_glide_swordfish.json");
-
-    private static final java.util.List<RegionTile> THE_GWENITH_GLIDE_SHARK_ROUTE =
-            loadRoute("/routes/the_gwenith_glide_shark.json");
-
-    private static final java.util.List<RegionTile> THE_GWENITH_GLIDE_MARLIN_ROUTE =
-            loadRoute("/routes/thegwenithglide_marlin_wiki.json");
-
-
     private java.util.List<RegionTile> getCurrentRegionRoute()
     {
-        int trialType = plugin.getTrialTypeThisRun();
-        int order = plugin.getCurrentRouteOrder();
+        Trial trial = plugin.getCurrentTrial();
+        Difficulty difficulty = plugin.getCurrentDifficulty();
 
-        java.util.List<RegionTile> base;
-
-        // Get trial type difficulty
-        switch (trialType)
+        if (trial == null || difficulty == null)
         {
-            case 2: // Swordfish
-                base = THE_GWENITH_GLIDE_SWORDFISH_ROUTE;
-                break;
-            case 3: // Shark
-                base = THE_GWENITH_GLIDE_SHARK_ROUTE;
-                break;
-            case 4: // Marlin
-                base = THE_GWENITH_GLIDE_MARLIN_ROUTE;
-                break;
-            default:
-                return java.util.Collections.emptyList();
+            return java.util.Collections.emptyList();
         }
 
-        // Keep only tiles from the current order
+        RouteVariant variant = getActiveVariant(trial, difficulty);
+
+        String path = RouteResources.buildRoutePath(
+                trial,
+                difficulty,
+                variant,
+                "route.json"
+        );
+
+        java.util.List<RegionTile> base = loadRoute(path);
+        if (base == null || base.isEmpty())
+        {
+            return java.util.Collections.emptyList();
+        }
+
+        int order = plugin.getCurrentRouteOrder();
+
         return base.stream()
                 .filter(t -> t.order == order)
                 .collect(Collectors.toList());
+    }
+
+    private static List<RegionTile> getRoute(Trial trial,
+                                             Difficulty difficulty,
+                                             RouteVariant variant)
+    {
+        String key = trial.name() + "-" + difficulty.name() + "-" + variant.name();
+        return ROUTE_CACHE.computeIfAbsent(key, k -> {
+            String path = RouteResources.buildRoutePath(
+                    trial,
+                    difficulty,
+                    variant,
+                    "route.json"
+            );
+            return loadRoute(path);
+        });
     }
 
     private static final class RegionTile
@@ -160,7 +177,7 @@ public class RouteOverlay extends Overlay
         }
     }
 
-    // JSON structure
+    // JSON POJO
     private static final class RoutePoint
     {
         int regionId;
@@ -170,24 +187,23 @@ public class RouteOverlay extends Overlay
         int order;
     }
 
-    // Load a route from JSON resource
-    private static java.util.List<RegionTile> loadRoute(String resourcePath)
+    private static List<RegionTile> loadRoute(String resourcePath)
     {
         InputStream in = RouteOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
         {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
 
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
         {
             Gson gson = new Gson();
-            Type listType = new TypeToken<java.util.List<RoutePoint>>(){}.getType();
-            java.util.List<RoutePoint> points = gson.fromJson(reader, listType);
+            Type listType = new TypeToken<List<RoutePoint>>(){}.getType();
+            List<RoutePoint> points = gson.fromJson(reader, listType);
 
             if (points == null)
             {
-                return java.util.Collections.emptyList();
+                return Collections.emptyList();
             }
 
             return points.stream()
@@ -196,9 +212,52 @@ public class RouteOverlay extends Overlay
         }
         catch (Exception e)
         {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
     }
+
+    private RouteVariant getActiveVariant(Trial trial, Difficulty difficulty)
+    {
+        switch (trial)
+        {
+            case GWENITH_GLIDE:
+                switch (difficulty)
+                {
+                    case SWORDFISH:
+                        return config.gwGlideSwordfishVariant();
+                    case SHARK:
+                        return config.gwGlideSharkVariant();
+                    case MARLIN:
+                        return config.gwGlideMarlinVariant();
+                }
+                break;
+
+            case JUBBLY_JIVE:
+                switch (difficulty)
+                {
+                    case SWORDFISH:
+                        return config.jubblySwordfishVariant();
+                    case SHARK:
+                        return config.jubblySharkVariant();
+                    case MARLIN:
+                        return config.jubblyMarlinVariant();
+                }
+                break;
+
+            case TEMPOR_TANTRUM:
+                switch (difficulty)
+                {
+                    case SWORDFISH:
+                        return config.temporSwordfishVariant();
+                    case SHARK:
+                        return config.temporSharkVariant();
+                    case MARLIN:
+                        return config.temporMarlinVariant();
+                }
+                break;
+        }
+
+        // Fallback
+        return RouteVariant.WIKI;
+    }
 }
-
-

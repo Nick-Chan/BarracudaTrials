@@ -2,6 +2,10 @@ package com.BarracudaTrials.overlay;
 
 import com.BarracudaTrials.BarracudaTrialsPlugin;
 import com.BarracudaTrials.config.Config;
+import com.BarracudaTrials.model.Difficulty;
+import com.BarracudaTrials.model.RouteVariant;
+import com.BarracudaTrials.model.Trial;
+import com.BarracudaTrials.util.RouteResources;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.runelite.api.Client;
@@ -21,8 +25,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -32,10 +36,8 @@ public class CrystalMoteOverlay extends Overlay
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
 
-    // Load Crystal Mote positions for Gwenith Glide Marlin
-    // Adjust path if your resource is named differently
-    private static final List<CrystalMotePoint> THE_GWENITH_GLIDE_MARLIN_MOTES =
-            loadCrystalMotes("/routes/thegwenithglid_marlin_wiki_crystalmote.json");
+    // Cache: resourcePath -> list of motes
+    private final Map<String, List<CrystalMotePoint>> motesCache = new HashMap<>();
 
     @Inject
     public CrystalMoteOverlay(Client client,
@@ -54,18 +56,48 @@ public class CrystalMoteOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (!plugin.isTrialRunning() || !config.showCrystalMotes())
+        if (!plugin.isInTrial() || !config.showCrystalMotes())
         {
             return null;
         }
 
-        if (plugin.getTrialTypeThisRun() != 4) // 4 = Marlin
+        Trial trial = plugin.getCurrentTrial();
+        if (trial != Trial.GWENITH_GLIDE)
+        {
+            return null;
+        }
+
+        Difficulty difficulty;
+        RouteVariant variant;
+
+        switch (plugin.getTrialTypeThisRun())
+        {
+            case 2: // Swordfish
+                difficulty = Difficulty.SWORDFISH;
+                variant = config.gwGlideSwordfishVariant();
+                break;
+            case 3: // Shark
+                difficulty = Difficulty.SHARK;
+                variant = config.gwGlideSharkVariant();
+                break;
+            case 4: // Marlin
+                difficulty = Difficulty.MARLIN;
+                variant = config.gwGlideMarlinVariant();
+                break;
+            default:
+                return null;
+        }
+
+        List<CrystalMotePoint> allMotes = getMotes(trial, difficulty, variant);
+        if (allMotes.isEmpty())
         {
             return null;
         }
 
         int currentOrder = plugin.getCurrentRouteOrder();
-        List<CrystalMotePoint> motesForThisOrder = getMotesForOrder(currentOrder);
+        List<CrystalMotePoint> motesForThisOrder = allMotes.stream()
+                .filter(p -> p.order == currentOrder)
+                .collect(Collectors.toList());
 
         if (motesForThisOrder.isEmpty())
         {
@@ -74,14 +106,12 @@ public class CrystalMoteOverlay extends Overlay
 
         int tileRadius = config.crystalMotesSmallHighlight() ? 1 : 5;
 
-        // Highlight colour
         Color outline = config.crystalMoteColor();
         if (outline == null)
         {
             outline = new Color(166, 0, 255, 160);
         }
 
-        // Fill
         Color fill = new Color(0, 0, 0, 70);
 
         graphics.setStroke(new BasicStroke(2.0f));
@@ -101,7 +131,6 @@ public class CrystalMoteOverlay extends Overlay
                 continue;
             }
 
-            // fill then outline
             graphics.setColor(fill);
             graphics.fill(poly);
             graphics.setColor(outline);
@@ -111,16 +140,10 @@ public class CrystalMoteOverlay extends Overlay
         return null;
     }
 
-    private List<CrystalMotePoint> getMotesForOrder(int order)
+    private List<CrystalMotePoint> getMotes(Trial trial, Difficulty difficulty, RouteVariant variant)
     {
-        if (THE_GWENITH_GLIDE_MARLIN_MOTES == null || THE_GWENITH_GLIDE_MARLIN_MOTES.isEmpty())
-        {
-            return Collections.emptyList();
-        }
-
-        return THE_GWENITH_GLIDE_MARLIN_MOTES.stream()
-                .filter(p -> p.order == order)
-                .collect(Collectors.toList());
+        String path = RouteResources.buildCrystalMotesPath(trial, difficulty, variant);
+        return motesCache.computeIfAbsent(path, CrystalMoteOverlay::loadCrystalMotes);
     }
 
     // JSON mapping

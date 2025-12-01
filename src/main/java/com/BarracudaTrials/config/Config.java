@@ -1,6 +1,7 @@
 package com.BarracudaTrials.config;
 
 import com.BarracudaTrials.model.SpeedBoostDisplayMode;
+import com.BarracudaTrials.model.RouteVariant;
 import net.runelite.client.config.Alpha;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
@@ -37,9 +38,25 @@ public interface Config extends net.runelite.client.config.Config
     String lostSuppliesSection = "lostSuppliesSection";
 
     @ConfigSection(
-            name = "The Gwenith Glide",
-            description = "Settings for The Gwenith Glide",
+            name = "Tempor Tantrum",
+            description = "Settings for The Tempor Tantrum",
             position = 3,
+            closedByDefault = false
+    )
+    String theTemporTantrumSection = "theTemporTantrumSection";
+
+    @ConfigSection(
+            name = "Jubbly Jive",
+            description = "Settings for The Jubbly Jive",
+            position = 3,
+            closedByDefault = false
+    )
+    String theJubblyJiveSection = "theJubblyJiveSection";
+
+    @ConfigSection(
+            name = "Gwenith Glide",
+            description = "Settings for The Gwenith Glide",
+            position = 4,
             closedByDefault = false
     )
     String theGwenithGlideSection = "theGwenithGlideSection";
@@ -158,9 +175,119 @@ public interface Config extends net.runelite.client.config.Config
         return new Color(255, 215, 0, 160);
     }
 
+    // Tempor Tantrum
+    @ConfigItem(
+            position = 0,
+            keyName = "temporSwordfishVariant",
+            name = "Swordfish Route",
+            description = "Route variant for Tempor Tantrum (Swordfish)",
+            section = theTemporTantrumSection
+    )
+    default RouteVariant temporSwordfishVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 1,
+            keyName = "temporSharkVariant",
+            name = "Shark Route",
+            description = "Route variant for Tempor Tantrum (Shark)",
+            section = theTemporTantrumSection
+    )
+    default RouteVariant temporSharkVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 2,
+            keyName = "temporMarlinVariant",
+            name = "Marlin Route",
+            description = "Route variant for Tempor Tantrum (Marlin)",
+            section = theTemporTantrumSection
+    )
+    default RouteVariant temporMarlinVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    // Jubbly Jive
+    @ConfigItem(
+            position = 0,
+            keyName = "jubblySwordfishVariant",
+            name = "Swordfish Route",
+            description = "Route variant for Jubbly Jive (Swordfish)",
+            section = theJubblyJiveSection
+    )
+    default RouteVariant jubblySwordfishVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 1,
+            keyName = "jubblySharkVariant",
+            name = "Shark Route",
+            description = "Route variant for Jubbly Jive (Shark)",
+            section = theJubblyJiveSection
+    )
+    default RouteVariant jubblySharkVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 2,
+            keyName = "jubblyMarlinVariant",
+            name = "Marlin Route",
+            description = "Route variant for Jubbly Jive (Marlin)",
+            section = theJubblyJiveSection
+    )
+    default RouteVariant jubblyMarlinVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
     // The Gwenith Glide
     @ConfigItem(
             position = 0,
+            keyName = "gwGlideSwordfishVariant",
+            name = "Swordfish Route",
+            description = "Route variant for Gwenith Glide (Swordfish)",
+            section = theGwenithGlideSection
+    )
+    default RouteVariant gwGlideSwordfishVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 1,
+            keyName = "gwGlideSharkVariant",
+            name = "Shark Route",
+            description = "Route variant for Gwenith Glide (Shark)",
+            section = theGwenithGlideSection
+    )
+    default RouteVariant gwGlideSharkVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 2,
+            keyName = "gwGlideMarlinVariant",
+            name = "Marlin Route",
+            description = "Route variant for Gwenith Glide (Marlin)",
+            section = theGwenithGlideSection
+    )
+    default RouteVariant gwGlideMarlinVariant()
+    {
+        return RouteVariant.WIKI;
+    }
+
+    @ConfigItem(
+            position = 3,
             keyName = "showCrystalMotes",
             name = "Highlight Crystal Motes",
             description = "Show highlight tiles for Crystal Motes",
@@ -172,7 +299,7 @@ public interface Config extends net.runelite.client.config.Config
     }
 
     @ConfigItem(
-            position = 1,
+            position = 4,
             keyName = "crystalMotesSmallHighlight",
             name = "Small Hitbox Highlight",
             description = "Highlight Crystal Mote object only instead of hitbox",
@@ -185,7 +312,7 @@ public interface Config extends net.runelite.client.config.Config
 
     @Alpha
     @ConfigItem(
-            position = 2,
+            position = 5,
             keyName = "crystalMoteColor",
             name = "Crystal Outline colour",
             description = "Colour of the Crystal Mote highlight outline",
