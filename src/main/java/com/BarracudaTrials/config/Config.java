@@ -249,6 +249,43 @@ public interface Config extends net.runelite.client.config.Config
         return RouteVariant.WIKI;
     }
 
+    @ConfigItem(
+            position = 3,
+            keyName = "showRapids",
+            name = "Highlight Rapids",
+            description = "Show highlight tiles for rapids",
+            section = theJubblyJiveSection
+    )
+    default boolean showRapids()
+    {
+        return true;
+    }
+
+    @ConfigItem(
+            position = 4,
+            keyName = "rapidsSmallHighlight",
+            name = "Small Hitbox Highlight",
+            description = "Highlight rapids object only instead of hitbox",
+            section = theJubblyJiveSection
+    )
+    default boolean rapidsSmallHighlight()
+    {
+        return false;
+    }
+
+    @Alpha
+    @ConfigItem(
+            position = 5,
+            keyName = "rapidsColor",
+            name = "Rapids Outline colour",
+            description = "Colour of the rapids highlight outline",
+            section = theJubblyJiveSection
+    )
+    default Color rapidsColor()
+    {
+        return new Color(166, 0, 255, 160);
+    }
+
     // The Gwenith Glide
     @ConfigItem(
             position = 0,

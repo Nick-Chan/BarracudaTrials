@@ -41,4 +41,22 @@ public final class RouteResources
     {
         return buildRoutePath(trial, difficulty, variant, "crystal_motes.json");
     }
+
+    public static String buildRapidsPath(
+            Trial trial,
+            Difficulty difficulty,
+            RouteVariant variant
+    )
+    {
+        return buildRoutePath(trial, difficulty, variant, "rapids.json");
+    }
+
+    public static String buildPillarsPath(
+            Trial trial,
+            Difficulty difficulty,
+            RouteVariant variant
+    )
+    {
+        return buildRoutePath(trial, difficulty, variant, "pillars.json");
+    }
 }

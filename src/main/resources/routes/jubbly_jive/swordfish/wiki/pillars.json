@@ -1,0 +1,38 @@
+[
+  {
+    "regionId": 9014,
+    "regionX": 30,
+    "regionY": 30,
+    "z": 0,
+    "order": 1,
+    "pillar": 4,
+    "varbitId": 18415
+  },
+  {
+    "regionId": 9014,
+    "regionX": 30,
+    "regionY": 30,
+    "z": 0,
+    "order": 2,
+    "pillar": 5,
+    "varbitId": 18416
+  },
+  {
+    "regionId": 9014,
+    "regionX": 30,
+    "regionY": 30,
+    "z": 0,
+    "order": 3,
+    "pillar": 6,
+    "varbitId": 18417
+  },
+  {
+    "regionId": 9014,
+    "regionX": 30,
+    "regionY": 30,
+    "z": 0,
+    "order": 4,
+    "pillar": 7,
+    "varbitId": 18418
+  }
+]
