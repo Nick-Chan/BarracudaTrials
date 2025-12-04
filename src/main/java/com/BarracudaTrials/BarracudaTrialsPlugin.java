@@ -49,7 +49,6 @@ import java.util.Set;
 @Slf4j
 @PluginDescriptor(
         name = "Barracuda Trials",
-        enabledByDefault = false,
         description = "Shows a route overlay for Sailing Barracuda Trials & other helpful overlays"
 )
 public class BarracudaTrialsPlugin extends Plugin
