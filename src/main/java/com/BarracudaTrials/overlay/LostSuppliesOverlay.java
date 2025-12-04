@@ -104,7 +104,7 @@ public class LostSuppliesOverlay extends Overlay
             int objectiveVarbitId = VARBIT_SAILING_BT_OBJECTIVE_BASE + objectiveIndex;
             int objectiveState = client.getVarbitValue(objectiveVarbitId);
 
-            // If varbit == 0, this Lost Supply has been collected
+            // If 0, Lost Supply has been collected
             if (objectiveState == 0)
             {
                 continue;

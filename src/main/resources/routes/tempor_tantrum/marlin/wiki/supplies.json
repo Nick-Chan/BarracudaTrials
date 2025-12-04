@@ -1,0 +1,218 @@
+[
+  {
+    "varbit": 14,
+    "objectId": 59259,
+    "order": 1,
+    "index": 1
+  },
+  {
+    "varbit": 15,
+    "objectId": 59260,
+    "order": 1,
+    "index": 2
+  },
+  {
+    "varbit": 16,
+    "objectId": 59261,
+    "order": 1,
+    "index": 3
+  },
+  {
+    "varbit": 17,
+    "objectId": 59262,
+    "order": 1,
+    "index": 4
+  },
+  {
+    "varbit": 32,
+    "objectId": 59277,
+    "order": 1,
+    "index": 5
+  },
+  {
+    "varbit": 18,
+    "objectId": 59263,
+    "order": 1,
+    "index": 6
+  },
+  {
+    "varbit": 19,
+    "objectId": 59264,
+    "order": 2,
+    "index": 7
+  },
+  {
+    "varbit": 20,
+    "objectId": 59265,
+    "order": 2,
+    "index": 8
+  },
+  {
+    "varbit": 21,
+    "objectId": 59266,
+    "order": 2,
+    "index": 9
+  },
+  {
+    "varbit": 8,
+    "objectId": 59253,
+    "order": 2,
+    "index": 10
+  },
+  {
+    "varbit": 12,
+    "objectId": 59257,
+    "order": 2,
+    "index": 11
+  },
+  {
+    "varbit": 23,
+    "objectId": 59268,
+    "order": 2,
+    "index": 12
+  },
+  {
+    "varbit": 0,
+    "objectId": 59245,
+    "order": 3,
+    "index": 13
+  },
+  {
+    "varbit": 1,
+    "objectId": 59246,
+    "order": 3,
+    "index": 14
+  },
+  {
+    "varbit": 2,
+    "objectId": 59247,
+    "order": 3,
+    "index": 15
+  },
+  {
+    "varbit": 10,
+    "objectId": 59255,
+    "order": 3,
+    "index": 16
+  },
+  {
+    "varbit": 3,
+    "objectId": 59248,
+    "order": 3,
+    "index": 17
+  },
+  {
+    "varbit": 11,
+    "objectId": 59256,
+    "order": 3,
+    "index": 18
+  },
+  {
+    "varbit": 4,
+    "objectId": 59249,
+    "order": 3,
+    "index": 19
+  },
+  {
+    "varbit": 31,
+    "objectId": 59276,
+    "order": 3,
+    "index": 20
+  },
+  {
+    "varbit": 5,
+    "objectId": 59250,
+    "order": 4,
+    "index": 21
+  },
+  {
+    "varbit": 6,
+    "objectId": 59251,
+    "order": 4,
+    "index": 22
+  },
+  {
+    "varbit": 7,
+    "objectId": 59252,
+    "order": 4,
+    "index": 23
+  },
+  {
+    "varbit": 35,
+    "objectId": 59280,
+    "order": 4,
+    "index": 24
+  },
+  {
+    "varbit": 25,
+    "objectId": 59270,
+    "order": 5,
+    "index": 25
+  },
+  {
+    "varbit": 26,
+    "objectId": 59271,
+    "order": 5,
+    "index": 26
+  },
+  {
+    "varbit": 27,
+    "objectId": 59272,
+    "order": 5,
+    "index": 27
+  },
+  {
+    "varbit": 28,
+    "objectId": 59273,
+    "order": 5,
+    "index": 28
+  },
+  {
+    "varbit": 29,
+    "objectId": 59274,
+    "order": 5,
+    "index": 29
+  },
+  {
+    "varbit": 30,
+    "objectId": 59275,
+    "order": 5,
+    "index": 30
+  },
+  {
+    "varbit": 33,
+    "objectId": 59278,
+    "order": 6,
+    "index": 31
+  },
+  {
+    "varbit": 34,
+    "objectId": 59279,
+    "order": 6,
+    "index": 32
+  },
+  {
+    "varbit": 22,
+    "objectId": 59267,
+    "order": 6,
+    "index": 33
+  },
+  {
+    "varbit": 13,
+    "objectId": 59258,
+    "order": 6,
+    "index": 34
+  },
+  {
+    "varbit": 24,
+    "objectId": 59269,
+    "order": 6,
+    "index": 35
+  },
+  {
+    "varbit": 9,
+    "objectId": 59254,
+    "order": 6,
+    "index": 36
+  }
+]

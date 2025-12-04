@@ -1,0 +1,152 @@
+[
+  {
+    "varbit": 14,
+    "objectId": 59259,
+    "order": 1,
+    "index": 1
+  },
+  {
+    "varbit": 15,
+    "objectId": 59260,
+    "order": 1,
+    "index": 2
+  },
+  {
+    "varbit": 16,
+    "objectId": 59261,
+    "order": 1,
+    "index": 3
+  },
+  {
+    "varbit": 17,
+    "objectId": 59262,
+    "order": 1,
+    "index": 4
+  },
+  {
+    "varbit": 18,
+    "objectId": 59263,
+    "order": 1,
+    "index": 5
+  },
+  {
+    "varbit": 19,
+    "objectId": 59264,
+    "order": 2,
+    "index": 6
+  },
+  {
+    "varbit": 20,
+    "objectId": 59265,
+    "order": 2,
+    "index": 7
+  },
+  {
+    "varbit": 21,
+    "objectId": 59266,
+    "order": 2,
+    "index": 8
+  },
+  {
+    "varbit": 12,
+    "objectId": 59257,
+    "order": 2,
+    "index": 9
+  },
+  {
+    "varbit": 23,
+    "objectId": 59268,
+    "order": 2,
+    "index": 10
+  },
+  {
+    "varbit": 0,
+    "objectId": 59245,
+    "order": 3,
+    "index": 11
+  },
+  {
+    "varbit": 1,
+    "objectId": 59246,
+    "order": 3,
+    "index": 12
+  },
+  {
+    "varbit": 2,
+    "objectId": 59247,
+    "order": 3,
+    "index": 13
+  },
+  {
+    "varbit": 10,
+    "objectId": 59255,
+    "order": 3,
+    "index": 14
+  },
+  {
+    "varbit": 3,
+    "objectId": 59248,
+    "order": 3,
+    "index": 15
+  },
+  {
+    "varbit": 11,
+    "objectId": 59256,
+    "order": 3,
+    "index": 16
+  },
+  {
+    "varbit": 4,
+    "objectId": 59249,
+    "order": 3,
+    "index": 17
+  },
+  {
+    "varbit": 5,
+    "objectId": 59250,
+    "order": 4,
+    "index": 18
+  },
+  {
+    "varbit": 6,
+    "objectId": 59251,
+    "order": 4,
+    "index": 19
+  },
+  {
+    "varbit": 7,
+    "objectId": 59252,
+    "order": 4,
+    "index": 20
+  },
+  {
+    "varbit": 8,
+    "objectId": 59253,
+    "order": 4,
+    "index": 21
+  },
+  {
+    "varbit": 22,
+    "objectId": 59267,
+    "order": 4,
+    "index": 22
+  },
+  {
+    "varbit": 13,
+    "objectId": 59258,
+    "order": 4,
+    "index": 23
+  },
+  {
+    "varbit": 24,
+    "objectId": 59269,
+    "order": 4,
+    "index": 24
+  },
+  {
+    "varbit": 9,
+    "objectId": 59254,
+    "order": 4,
+    "index": 25
+  }
+]

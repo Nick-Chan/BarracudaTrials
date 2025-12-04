@@ -31,7 +31,7 @@ public class Ship
 
     public void updateFromGameObject(GameObject obj)
     {
-        // Detect ship type
+        // ship type
         ShipType ship = ShipType.fromGameObjectId(obj.getId());
         if (ship != null)
         {
@@ -39,7 +39,7 @@ public class Ship
             this.hull = obj;
         }
 
-        // Detect sail type
+        // sail type
         SailType sail = SailType.fromGameObjectId(obj.getId());
         if (sail != null)
         {

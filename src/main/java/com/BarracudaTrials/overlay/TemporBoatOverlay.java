@@ -2,6 +2,7 @@ package com.BarracudaTrials.overlay;
 
 import com.BarracudaTrials.BarracudaTrialsPlugin;
 import com.BarracudaTrials.config.Config;
+import com.BarracudaTrials.model.Trial;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.Perspective;
@@ -16,14 +17,14 @@ import javax.inject.Singleton;
 import java.awt.*;
 
 @Singleton
-public class JubblyBoatOverlay extends Overlay
+public class TemporBoatOverlay extends Overlay
 {
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
 
     @Inject
-    public JubblyBoatOverlay(Client client,
+    public TemporBoatOverlay(Client client,
                              BarracudaTrialsPlugin plugin,
                              Config config)
     {
@@ -39,7 +40,7 @@ public class JubblyBoatOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (!plugin.shouldHighlightJubblyBoat())
+        if (!plugin.isInTrial() || plugin.getCurrentTrial() != Trial.TEMPOR_TANTRUM)
         {
             return null;
         }
@@ -49,8 +50,21 @@ public class JubblyBoatOverlay extends Overlay
             return null;
         }
 
-        GameObject boat = plugin.getJubblyBoatObject();
-        if (boat == null)
+        GameObject boat = null;
+        String label = null;
+
+        if (plugin.shouldHighlightTemporSouthBoat())
+        {
+            boat = plugin.getTemporSouthBoat();
+            label = "Collect";
+        }
+        else if (plugin.shouldHighlightTemporNorthBoat())
+        {
+            boat = plugin.getTemporNorthBoat();
+            label = "Deliver";
+        }
+
+        if (boat == null || label == null)
         {
             return null;
         }
@@ -75,23 +89,18 @@ public class JubblyBoatOverlay extends Overlay
         graphics.setColor(outline);
         graphics.draw(hull);
 
-        // Collect text
+        // Label text ("Collect" / "Deliver")
         LocalPoint lp = boat.getLocalLocation();
         if (lp != null)
         {
             net.runelite.api.Point textLoc =
-                    Perspective.getCanvasTextLocation(client, graphics, lp, "Collect", 0);
+                    Perspective.getCanvasTextLocation(client, graphics, lp, label, 0);
 
             if (textLoc != null)
             {
-                Color text = config.collectBoatColor();
-                if (text == null)
-                {
-                    text = new Color(255, 215, 0, 160);
-                }
-
+                Color text = outline;
                 graphics.setColor(text);
-                graphics.drawString("Collect", textLoc.getX(), textLoc.getY());
+                graphics.drawString(label, textLoc.getX(), textLoc.getY());
             }
         }
 

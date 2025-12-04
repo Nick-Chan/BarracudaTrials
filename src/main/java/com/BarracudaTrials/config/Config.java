@@ -48,7 +48,7 @@ public interface Config extends net.runelite.client.config.Config
     @ConfigSection(
             name = "Jubbly Jive",
             description = "Settings for The Jubbly Jive",
-            position = 3,
+            position = 4,
             closedByDefault = false
     )
     String theJubblyJiveSection = "theJubblyJiveSection";
@@ -56,7 +56,7 @@ public interface Config extends net.runelite.client.config.Config
     @ConfigSection(
             name = "Gwenith Glide",
             description = "Settings for The Gwenith Glide",
-            position = 4,
+            position = 5,
             closedByDefault = false
     )
     String theGwenithGlideSection = "theGwenithGlideSection";

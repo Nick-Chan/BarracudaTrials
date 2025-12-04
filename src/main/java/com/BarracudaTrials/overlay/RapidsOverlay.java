@@ -62,7 +62,7 @@ public class RapidsOverlay extends Overlay
         }
 
         Trial trial = plugin.getCurrentTrial();
-        if (trial != Trial.JUBBLY_JIVE)
+        if (trial != Trial.JUBBLY_JIVE && trial != Trial.TEMPOR_TANTRUM )
         {
             return null;
         }

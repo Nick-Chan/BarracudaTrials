@@ -36,7 +36,7 @@ public class CrystalMoteOverlay extends Overlay
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
 
-    // Cache: resourcePath -> list of motes
+    // Cache list of motes
     private final Map<String, List<CrystalMotePoint>> motesCache = new HashMap<>();
 
     @Inject

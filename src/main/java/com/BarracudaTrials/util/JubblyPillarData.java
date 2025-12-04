@@ -19,7 +19,6 @@ public final class JubblyPillarData
 {
     private JubblyPillarData() {}
 
-    // cache: path -> list of defs
     private static final Map<String, List<PillarDef>> CACHE = new HashMap<>();
 
     public static List<PillarDef> getPillars(Trial trial,
@@ -37,8 +36,8 @@ public final class JubblyPillarData
         public final int regionY;
         public final int plane;
         public final int order;
-        public final int pillar;   // 1..7
-        public final int varbitId; // e.g. 18415
+        public final int pillar;
+        public final int varbitId;
 
         public PillarDef(int regionId, int regionX, int regionY, int plane,
                          int order, int pillar, int varbitId)
@@ -58,7 +57,7 @@ public final class JubblyPillarData
         }
     }
 
-    // JSON DTO matching your file
+    // JSON
     private static final class PillarPointDto
     {
         int regionId;

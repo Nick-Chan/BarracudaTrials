@@ -2,7 +2,11 @@
 BarracudaTrialsPlugin
 Plugin for Sailing Barracuda Trials including:
  - Routes
- - Timer
+ - Pillar overlay
+ - Collect boat overlay
+ - Lost supply overlay
+ - Crystal mote overlay
+ - Speed boost overlay
 Created by Vanik
 Initial date: 28/11/2025
 */
@@ -35,8 +39,6 @@ import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameObjectDespawned;
 import net.runelite.api.events.WorldViewUnloaded;
 
-// debug
-
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,7 +49,7 @@ import java.util.Set;
 @PluginDescriptor(
         name = "Barracuda Trials",
         enabledByDefault = false,
-        description = "Shows a route overlay for Sailing Barracuda Trials"
+        description = "Shows a route overlay for Sailing Barracuda Trials & other helpful overlays"
 )
 public class BarracudaTrialsPlugin extends Plugin
 {
@@ -70,9 +72,8 @@ public class BarracudaTrialsPlugin extends Plugin
         return inTrial;
     }
 
-    // Gwenith Glide IDs
+    // Gwenith Glide
     private static final int VARBIT_SAILING_BT_IN_TRIAL = 18410;
-
     private static final int VARP_SAILING_BT_TIME_START = 4987;
     private static final int VARP_SAILING_BT_TRIAL_COMPLETED = 5000;
     private static final int VARBIT_LOST_SUPPLY_TRIGGER = 18524;
@@ -95,7 +96,7 @@ public class BarracudaTrialsPlugin extends Plugin
 
     private List<JubblyPillarData.PillarDef> jubblyPillarRoute = Collections.emptyList();
     private int currentJubblyPillarOrder = 0;
-    private int jubblyRound = 0; // Marlin: 0 = no wave active, 1 = first balloon-toad wave, 2 = second wave
+    private int jubblyRound = 0;
     private int jubblyPillarIndex = 1;
 
     private final java.util.Map<Integer, GameObject> jubblyPillarObjects = new java.util.HashMap<>();
@@ -139,6 +140,70 @@ public class BarracudaTrialsPlugin extends Plugin
 
     private GameObject jubblyBoatObject;
     private boolean jubblyBoatHighlightActive = false;
+
+    // Tempor Tantrum
+    // North boat
+    private static final int[] TEMPOR_NORTH_BOAT_IDS = {
+            ObjectID.SAILING_BT_TEMPOR_TANTRUM_NORTH_LOC_PARENT,
+            ObjectID.SAILING_BT_TEMPOR_TANTRUM_NORTH_LOC_CHILD,
+            ObjectID.SAILING_BT_TEMPOR_TANTRUM_NORTH_LOC_CHILD_NOOP
+    };
+
+    // South boat
+    private static final int[] TEMPOR_SOUTH_BOAT_IDS = {
+            ObjectID.SAILING_BT_TEMPOR_TANTRUM_SOUTH_LOC_PARENT,
+            ObjectID.SAILING_BT_TEMPOR_TANTRUM_SOUTH_LOC_CHILD,
+            ObjectID.SAILING_BT_TEMPOR_TANTRUM_SOUTH_LOC_CHILD_NOOP
+    };
+
+    private static boolean isTemporNorthBoatId(int id)
+    {
+        for (int v : TEMPOR_NORTH_BOAT_IDS)
+        {
+            if (v == id)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isTemporSouthBoatId(int id)
+    {
+        for (int v : TEMPOR_SOUTH_BOAT_IDS)
+        {
+            if (v == id)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private GameObject temporNorthBoat;
+    private GameObject temporSouthBoat;
+    private boolean temporHighlightNorth;
+    private boolean temporHighlightSouth;
+
+    public GameObject getTemporNorthBoat()
+    {
+        return temporNorthBoat;
+    }
+
+    public GameObject getTemporSouthBoat()
+    {
+        return temporSouthBoat;
+    }
+
+    public boolean shouldHighlightTemporNorthBoat()
+    {
+        return temporHighlightNorth && temporNorthBoat != null;
+    }
+
+    public boolean shouldHighlightTemporSouthBoat()
+    {
+        return temporHighlightSouth && temporSouthBoat != null;
+    }
 
     public GameObject getJubblyBoatObject()
     {
@@ -205,6 +270,9 @@ public class BarracudaTrialsPlugin extends Plugin
     @Inject
     private JubblyBoatOverlay jubblyBoatOverlay;
 
+    @Inject
+    private TemporBoatOverlay temporBoatOverlay;
+
     @Provides
     Config provideConfig(ConfigManager configManager)
     {
@@ -221,6 +289,7 @@ public class BarracudaTrialsPlugin extends Plugin
         overlayManager.add(rapidsOverlay);
         overlayManager.add(pillarOverlay);
         overlayManager.add(jubblyBoatOverlay);
+        overlayManager.add(temporBoatOverlay);
 
         ship = null;
         speedBoostTicksRemaining = 0;
@@ -237,6 +306,7 @@ public class BarracudaTrialsPlugin extends Plugin
         overlayManager.remove(rapidsOverlay);
         overlayManager.remove(pillarOverlay);
         overlayManager.remove(jubblyBoatOverlay);
+        overlayManager.remove(temporBoatOverlay);
 
         ship = null;
         speedBoostTicksRemaining = 0;
@@ -286,6 +356,16 @@ public class BarracudaTrialsPlugin extends Plugin
         {
             jubblyPillarObjects.put(pillarIdx, o);
         }
+
+        // Tempor Tantrum boats
+        if (isTemporNorthBoatId(o.getId()))
+        {
+            temporNorthBoat = o;
+        }
+        if (isTemporSouthBoatId(o.getId()))
+        {
+            temporSouthBoat = o;
+        }
     }
 
     @Subscribe
@@ -310,9 +390,18 @@ public class BarracudaTrialsPlugin extends Plugin
             jubblyPillarObjects.remove(idx);
         }
 
+        // Collection boats
         if (jubblyBoatObject == gone)
         {
             jubblyBoatObject = null;
+        }
+        if (temporNorthBoat == gone)
+        {
+            temporNorthBoat = null;
+        }
+        if (temporSouthBoat == gone)
+        {
+            temporSouthBoat = null;
         }
     }
 
@@ -355,6 +444,17 @@ public class BarracudaTrialsPlugin extends Plugin
             }
 
             jubblyBoatHighlightActive = currentTrial == Trial.JUBBLY_JIVE;
+
+            if (currentTrial == Trial.TEMPOR_TANTRUM)
+            {
+                temporHighlightSouth = true;
+                temporHighlightNorth = false;
+            }
+            else
+            {
+                temporHighlightSouth = false;
+                temporHighlightNorth = false;
+            }
         }
 
         // End/reset of trial
@@ -381,6 +481,9 @@ public class BarracudaTrialsPlugin extends Plugin
             jubblyBoatHighlightActive = false;
             jubblyRound = 0;
             jubblyPillarIndex = 0;
+
+            temporHighlightNorth = false;
+            temporHighlightSouth = false;
         }
 
         lastTimeStart = timeStart;
@@ -465,17 +568,6 @@ public class BarracudaTrialsPlugin extends Plugin
                 currentRouteOrder++;
             }
         }
-
-        /*/ DEBUG
-        int id = event.getVarbitId();
-        int value = event.getValue();
-
-        client.addChatMessage(
-                ChatMessageType.GAMEMESSAGE,
-                "",
-                "Varbit changed during trial: id=" + id + " value=" + value,
-                null
-        );*/
 
         if (!trialRunning)
         {
@@ -698,64 +790,25 @@ public class BarracudaTrialsPlugin extends Plugin
             currentSplit++;
             currentRouteOrder++;
         }
-    }
-
-    private void recalcCurrentJubblyPillarOrder()
-    {
-        if (!inTrial || currentTrial != Trial.JUBBLY_JIVE || jubblyPillarRoute.isEmpty())
+        else if (currentTrial == Trial.TEMPOR_TANTRUM)
         {
-            currentJubblyPillarOrder = 0;
-            jubblyPillarIndex = -1;
-            return;
-        }
-
-        // No active wave
-        if (jubblyRound <= 0)
-        {
-            currentJubblyPillarOrder = 0;
-            jubblyPillarIndex = -1;
-            return;
-        }
-
-        if (jubblyPillarIndex >= 0 && jubblyPillarIndex < jubblyPillarRoute.size())
-        {
-            currentJubblyPillarOrder = jubblyPillarRoute.get(jubblyPillarIndex).order;
-            return;
-        }
-
-        int minOrder;
-        int maxOrder;
-
-        // Wave 1: orders 1–9
-        if (jubblyRound == 1)
-        {
-            minOrder = 1;
-            maxOrder = 9;
-        }
-        // Wave 2: orders 10–18
-        else
-        {
-            minOrder = 10;
-            maxOrder = 18;
-        }
-
-        jubblyPillarIndex = -1;
-
-        for (int i = 0; i < jubblyPillarRoute.size(); i++)
-        {
-            JubblyPillarData.PillarDef def = jubblyPillarRoute.get(i);
-            if (def.order < minOrder || def.order > maxOrder)
+            if (message.startsWith("You collect the rum shipment"))
             {
-                continue;
+                temporHighlightSouth = false;
+                temporHighlightNorth = true;
+
+                currentSplit++;
+                currentRouteOrder++;
             }
+            if (message.startsWith("You deliver the rum shipment"))
+            {
+                temporHighlightSouth = true;
+                temporHighlightNorth = false;
 
-            jubblyPillarIndex = i;
-            currentJubblyPillarOrder = def.order;
-            return;
+                currentSplit++;
+                currentRouteOrder++;
+            }
         }
-
-        currentJubblyPillarOrder = 0;
-        jubblyPillarIndex = -1;
     }
 
     // Trial / Difficulty for overlays
@@ -796,18 +849,8 @@ public class BarracudaTrialsPlugin extends Plugin
         return trialRunning;
     }
 
-    public int getCurrentSplit()
-    {
-        return currentSplit;
-    }
-
     public int getTrialTypeThisRun()
     {
         return trialTypeThisRun;
-    }
-
-    public int getTotalSplitsThisRun()
-    {
-        return totalSplitsThisRun;
     }
 }
