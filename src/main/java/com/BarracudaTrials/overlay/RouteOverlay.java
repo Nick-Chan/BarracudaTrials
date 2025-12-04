@@ -35,16 +35,20 @@ public class RouteOverlay extends Overlay
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
+    private final Gson gson;
 
-    // simple in-memory cache: key -> list of tiles
-    private static final Map<String, List<RegionTile>> ROUTE_CACHE = new HashMap<>();
+    private final Map<String, List<RegionTile>> routeCache = new HashMap<>();
 
     @Inject
-    public RouteOverlay(Client client, BarracudaTrialsPlugin plugin, Config  config)
+    public RouteOverlay(Client client,
+                        BarracudaTrialsPlugin plugin,
+                        Config config,
+                        Gson gson)
     {
         this.client = client;
         this.plugin = plugin;
         this.config = config;
+        this.gson = gson;
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ABOVE_SCENE);
@@ -106,14 +110,14 @@ public class RouteOverlay extends Overlay
         return null;
     }
 
-    private java.util.List<RegionTile> getCurrentRegionRoute()
+    private List<RegionTile> getCurrentRegionRoute()
     {
         Trial trial = plugin.getCurrentTrial();
         Difficulty difficulty = plugin.getCurrentDifficulty();
 
         if (trial == null || difficulty == null)
         {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
 
         RouteVariant variant = getActiveVariant(trial, difficulty);
@@ -125,10 +129,10 @@ public class RouteOverlay extends Overlay
                 "route.json"
         );
 
-        java.util.List<RegionTile> base = loadRoute(path);
+        List<RegionTile> base = loadRoute(path);
         if (base == null || base.isEmpty())
         {
-            return java.util.Collections.emptyList();
+            return Collections.emptyList();
         }
 
         int order = plugin.getCurrentRouteOrder();
@@ -138,12 +142,12 @@ public class RouteOverlay extends Overlay
                 .collect(Collectors.toList());
     }
 
-    private static List<RegionTile> getRoute(Trial trial,
-                                             Difficulty difficulty,
-                                             RouteVariant variant)
+    private List<RegionTile> getRoute(Trial trial,
+                                      Difficulty difficulty,
+                                      RouteVariant variant)
     {
         String key = trial.name() + "-" + difficulty.name() + "-" + variant.name();
-        return ROUTE_CACHE.computeIfAbsent(key, k -> {
+        return routeCache.computeIfAbsent(key, k -> {
             String path = RouteResources.buildRoutePath(
                     trial,
                     difficulty,
@@ -177,7 +181,7 @@ public class RouteOverlay extends Overlay
         }
     }
 
-    // JSON POJO
+    // JSON
     private static final class RoutePoint
     {
         int regionId;
@@ -187,7 +191,7 @@ public class RouteOverlay extends Overlay
         int order;
     }
 
-    private static List<RegionTile> loadRoute(String resourcePath)
+    private List<RegionTile> loadRoute(String resourcePath)
     {
         InputStream in = RouteOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
@@ -197,8 +201,7 @@ public class RouteOverlay extends Overlay
 
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
         {
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<RoutePoint>>(){}.getType();
+            Type listType = new TypeToken<List<RoutePoint>>() {}.getType();
             List<RoutePoint> points = gson.fromJson(reader, listType);
 
             if (points == null)

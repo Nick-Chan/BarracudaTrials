@@ -34,6 +34,9 @@ public class JubblyPillarOverlay extends Overlay
 
     private static final int JUBBLY_PILLAR_RANGE_RADIUS_TILES = 15;
 
+    @Inject
+    private JubblyPillarData jubblyPillarData;
+
     private static boolean isInRangeShape(int dx, int dy, int radius)
     {
         int ax = Math.abs(dx);
@@ -134,7 +137,7 @@ public class JubblyPillarOverlay extends Overlay
         }
 
         List<JubblyPillarData.PillarDef> route =
-                JubblyPillarData.getPillars(Trial.JUBBLY_JIVE, difficulty, variant);
+                jubblyPillarData.getPillars(Trial.JUBBLY_JIVE, difficulty, variant);
 
         if (route == null || route.isEmpty())
         {

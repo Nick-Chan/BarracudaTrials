@@ -7,6 +7,8 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.runelite.api.coords.WorldPoint;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -15,18 +17,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public final class JubblyPillarData
+@Singleton
+public class JubblyPillarData
 {
-    private JubblyPillarData() {}
+    private final Gson gson;
+    private final Map<String, List<PillarDef>> cache = new HashMap<>();
 
-    private static final Map<String, List<PillarDef>> CACHE = new HashMap<>();
+    @Inject
+    public JubblyPillarData(Gson gson)
+    {
+        this.gson = gson;
+    }
 
-    public static List<PillarDef> getPillars(Trial trial,
-                                             Difficulty difficulty,
-                                             RouteVariant variant)
+    public List<PillarDef> getPillars(Trial trial,
+                                      Difficulty difficulty,
+                                      RouteVariant variant)
     {
         String path = RouteResources.buildPillarsPath(trial, difficulty, variant);
-        return CACHE.computeIfAbsent(path, JubblyPillarData::loadPillars);
+
+        return cache.computeIfAbsent(path, this::loadPillars);
     }
 
     public static final class PillarDef
@@ -69,7 +78,7 @@ public final class JubblyPillarData
         int varbitId;
     }
 
-    private static List<PillarDef> loadPillars(String resourcePath)
+    private List<PillarDef> loadPillars(String resourcePath)
     {
         InputStream in = JubblyPillarData.class.getResourceAsStream(resourcePath);
         if (in == null)
@@ -79,8 +88,7 @@ public final class JubblyPillarData
 
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
         {
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<PillarPointDto>>(){}.getType();
+            Type listType = new TypeToken<List<PillarPointDto>>() {}.getType();
             List<PillarPointDto> points = gson.fromJson(reader, listType);
 
             if (points == null)

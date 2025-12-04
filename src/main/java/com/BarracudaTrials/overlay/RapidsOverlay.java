@@ -35,18 +35,21 @@ public class RapidsOverlay extends Overlay
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
+    private final Gson gson;
 
     // Cache - rapids list
     private final Map<String, List<RapidsPoint>> rapidsCache = new HashMap<>();
 
     @Inject
     public RapidsOverlay(Client client,
-                              BarracudaTrialsPlugin plugin,
-                              Config config)
+                         BarracudaTrialsPlugin plugin,
+                         Config config,
+                         Gson gson)
     {
         this.client = client;
         this.plugin = plugin;
         this.config = config;
+        this.gson = gson;
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ABOVE_SCENE);
@@ -62,7 +65,7 @@ public class RapidsOverlay extends Overlay
         }
 
         Trial trial = plugin.getCurrentTrial();
-        if (trial != Trial.JUBBLY_JIVE && trial != Trial.TEMPOR_TANTRUM )
+        if (trial != Trial.JUBBLY_JIVE && trial != Trial.TEMPOR_TANTRUM)
         {
             return null;
         }
@@ -143,7 +146,8 @@ public class RapidsOverlay extends Overlay
     private List<RapidsPoint> getRapids(Trial trial, Difficulty difficulty, RouteVariant variant)
     {
         String path = RouteResources.buildRapidsPath(trial, difficulty, variant);
-        return rapidsCache.computeIfAbsent(path, RapidsOverlay::loadRapids);
+
+        return rapidsCache.computeIfAbsent(path, this::loadRapids);
     }
 
     // JSON mapping
@@ -156,7 +160,7 @@ public class RapidsOverlay extends Overlay
         int order;
     }
 
-    private static List<RapidsPoint> loadRapids(String resourcePath)
+    private List<RapidsPoint> loadRapids(String resourcePath)
     {
         InputStream in = RapidsOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
@@ -166,8 +170,7 @@ public class RapidsOverlay extends Overlay
 
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
         {
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<RapidsPoint>>(){}.getType();
+            Type listType = new TypeToken<List<RapidsPoint>>() {}.getType();
             List<RapidsPoint> points = gson.fromJson(reader, listType);
 
             if (points == null)

@@ -21,6 +21,7 @@ import com.BarracudaTrials.model.RouteVariant;
 import com.BarracudaTrials.overlay.*;
 import com.BarracudaTrials.util.JubblyPillarData;
 import com.google.inject.Provides;
+import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.events.ChatMessage;
@@ -239,6 +240,8 @@ public class BarracudaTrialsPlugin extends Plugin
     {
         return speedBoostTicksMax;
     }
+    @Inject
+    private Gson gson;
 
     @Inject
     private Client client;
@@ -269,6 +272,9 @@ public class BarracudaTrialsPlugin extends Plugin
 
     @Inject
     private JubblyBoatOverlay jubblyBoatOverlay;
+
+    @Inject
+    private JubblyPillarData jubblyPillarData;
 
     @Inject
     private TemporBoatOverlay temporBoatOverlay;
@@ -667,7 +673,7 @@ public class BarracudaTrialsPlugin extends Plugin
                     // Load the pillar route once
                     if (jubblyPillarRoute.isEmpty())
                     {
-                        jubblyPillarRoute = JubblyPillarData.getPillars(Trial.JUBBLY_JIVE, diff, variant);
+                        jubblyPillarRoute = jubblyPillarData.getPillars(Trial.JUBBLY_JIVE, diff, variant);
                     }
 
                     if (jubblyPillarRoute.isEmpty())

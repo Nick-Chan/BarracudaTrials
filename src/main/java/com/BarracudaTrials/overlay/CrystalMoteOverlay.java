@@ -35,6 +35,7 @@ public class CrystalMoteOverlay extends Overlay
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
+    private final Gson gson;
 
     // Cache list of motes
     private final Map<String, List<CrystalMotePoint>> motesCache = new HashMap<>();
@@ -42,11 +43,13 @@ public class CrystalMoteOverlay extends Overlay
     @Inject
     public CrystalMoteOverlay(Client client,
                               BarracudaTrialsPlugin plugin,
-                              Config config)
+                              Config config,
+                              Gson gson)
     {
         this.client = client;
         this.plugin = plugin;
         this.config = config;
+        this.gson = gson;
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ABOVE_SCENE);
@@ -143,7 +146,8 @@ public class CrystalMoteOverlay extends Overlay
     private List<CrystalMotePoint> getMotes(Trial trial, Difficulty difficulty, RouteVariant variant)
     {
         String path = RouteResources.buildCrystalMotesPath(trial, difficulty, variant);
-        return motesCache.computeIfAbsent(path, CrystalMoteOverlay::loadCrystalMotes);
+
+        return motesCache.computeIfAbsent(path, this::loadCrystalMotes);
     }
 
     // JSON mapping
@@ -156,7 +160,7 @@ public class CrystalMoteOverlay extends Overlay
         int order;
     }
 
-    private static List<CrystalMotePoint> loadCrystalMotes(String resourcePath)
+    private List<CrystalMotePoint> loadCrystalMotes(String resourcePath)
     {
         InputStream in = CrystalMoteOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
@@ -166,8 +170,7 @@ public class CrystalMoteOverlay extends Overlay
 
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
         {
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<CrystalMotePoint>>(){}.getType();
+            Type listType = new TypeToken<List<CrystalMotePoint>>() {}.getType();
             List<CrystalMotePoint> points = gson.fromJson(reader, listType);
 
             if (points == null)

@@ -36,33 +36,36 @@ public class LostSuppliesOverlay extends Overlay
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
+    private final Gson gson;
 
     private static final int VARBIT_SAILING_BT_OBJECTIVE_BASE = 18448;
     private static final int MAX_OBJECTIVES = 96;
 
-    // Cache
-    private static final Map<String, Map<Integer, SupplyMeta>> SUPPLIES_CACHE = new HashMap<>();
+    // Cache (instance)
+    private final Map<String, Map<Integer, SupplyMeta>> suppliesCache = new HashMap<>();
 
-    // Global cache
-    private static final Map<Integer, SupplyMeta> ALL_SUPPLIES_META = new HashMap<>();
-
-    public static boolean hasMetaForId(int objectId)
-    {
-        return ALL_SUPPLIES_META.containsKey(objectId);
-    }
+    // Global cache (instance)
+    private final Map<Integer, SupplyMeta> allSuppliesMeta = new HashMap<>();
 
     @Inject
     public LostSuppliesOverlay(Client client,
                                BarracudaTrialsPlugin plugin,
-                               Config config)
+                               Config config,
+                               Gson gson)
     {
         this.client = client;
         this.plugin = plugin;
         this.config = config;
+        this.gson = gson;
 
         setPosition(OverlayPosition.DYNAMIC);
         setLayer(OverlayLayer.ABOVE_SCENE);
         setPriority(OverlayPriority.HIGH);
+    }
+
+    public boolean hasMetaForId(int objectId)
+    {
+        return allSuppliesMeta.containsKey(objectId);
     }
 
     @Override
@@ -166,7 +169,7 @@ public class LostSuppliesOverlay extends Overlay
         return getSuppliesMeta(trial, difficulty, variant);
     }
 
-    private static Map<Integer, SupplyMeta> getSuppliesMeta(
+    private Map<Integer, SupplyMeta> getSuppliesMeta(
             Trial trial,
             Difficulty difficulty,
             RouteVariant variant
@@ -174,12 +177,11 @@ public class LostSuppliesOverlay extends Overlay
     {
         String key = trial.name() + "-" + difficulty.name() + "-" + variant.name();
 
-        return SUPPLIES_CACHE.computeIfAbsent(key, k -> {
+        return suppliesCache.computeIfAbsent(key, k -> {
             String path = RouteResources.buildSuppliesPath(trial, difficulty, variant);
             Map<Integer, SupplyMeta> map = loadSuppliesMeta(path);
 
-            // Merge into global objectId -> meta map so hasMetaForId works
-            ALL_SUPPLIES_META.putAll(map);
+            allSuppliesMeta.putAll(map);
 
             return map;
         });
@@ -210,7 +212,7 @@ public class LostSuppliesOverlay extends Overlay
         }
     }
 
-    private static Map<Integer, SupplyMeta> loadSuppliesMeta(String resourcePath)
+    private Map<Integer, SupplyMeta> loadSuppliesMeta(String resourcePath)
     {
         InputStream in = LostSuppliesOverlay.class.getResourceAsStream(resourcePath);
         if (in == null)
@@ -220,8 +222,7 @@ public class LostSuppliesOverlay extends Overlay
 
         try (Reader reader = new InputStreamReader(in, StandardCharsets.UTF_8))
         {
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<SupplyPoint>>(){}.getType();
+            Type listType = new TypeToken<List<SupplyPoint>>() {}.getType();
             List<SupplyPoint> points = gson.fromJson(reader, listType);
 
             if (points == null)
