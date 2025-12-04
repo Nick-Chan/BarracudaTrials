@@ -99,6 +99,56 @@ public interface Config extends net.runelite.client.config.Config
         return new Color(0, 255, 0, 180);
     }
 
+    @ConfigItem(
+            position = 3,
+            keyName = "showRapids",
+            name = "Highlight Rapids",
+            description = "Show highlight tiles for rapids (Tempor Tantrum & Jubbly Jive only)",
+            section = generalSection
+    )
+    default boolean showRapids()
+    {
+        return true;
+    }
+
+    @Alpha
+    @ConfigItem(
+            position = 4,
+            keyName = "rapidsColor",
+            name = "Rapids Outline Colour",
+            description = "Colour of the rapids highlight outline",
+            section = generalSection
+    )
+    default Color rapidsColor()
+    {
+        return new Color(166, 0, 255, 160);
+    }
+
+    @ConfigItem(
+            position = 5,
+            keyName = "showCollectBoat",
+            name = "Highlight Collect Boats",
+            description = "Show highlight and text for collection boats in Tempor Tantrum (Rum) Jubbly Jive (Toads)",
+            section = generalSection
+    )
+    default boolean showCollectBoat()
+    {
+        return true;
+    }
+
+    @Alpha
+    @ConfigItem(
+            position = 6,
+            keyName = "collectBoatColor",
+            name = "Collect Boat Colour",
+            description = "Colour of the collection boats in Tempor Tantrum (Rum) Jubbly Jive (Toads)",
+            section = generalSection
+    )
+    default Color collectBoatColor()
+    {
+        return new Color(255, 215, 0, 160);
+    }
+
     // Route config
     @ConfigItem(
             position = 0,
@@ -251,39 +301,26 @@ public interface Config extends net.runelite.client.config.Config
 
     @ConfigItem(
             position = 3,
-            keyName = "showRapids",
-            name = "Highlight Rapids",
-            description = "Show highlight tiles for rapids",
+            keyName = "showPillars",
+            name = "Highlight Jubbly Pillars",
+            description = "Show highlight tiles for Jubbly Pillars",
             section = theJubblyJiveSection
     )
-    default boolean showRapids()
+    default boolean showPillars()
     {
         return true;
     }
 
     @ConfigItem(
             position = 4,
-            keyName = "rapidsSmallHighlight",
-            name = "Small Hitbox Highlight",
-            description = "Highlight rapids object only instead of hitbox",
+            keyName = "showPillarsRange",
+            name = "Show Pillars Range",
+            description = "Show tile range for Jubbly Pillars (EXPERIMENTAL)",
             section = theJubblyJiveSection
     )
-    default boolean rapidsSmallHighlight()
+    default boolean showPillarsRange()
     {
         return false;
-    }
-
-    @Alpha
-    @ConfigItem(
-            position = 5,
-            keyName = "rapidsColor",
-            name = "Rapids Outline colour",
-            description = "Colour of the rapids highlight outline",
-            section = theJubblyJiveSection
-    )
-    default Color rapidsColor()
-    {
-        return new Color(166, 0, 255, 160);
     }
 
     // The Gwenith Glide

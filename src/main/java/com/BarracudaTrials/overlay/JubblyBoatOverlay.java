@@ -2,9 +2,10 @@ package com.BarracudaTrials.overlay;
 
 import com.BarracudaTrials.BarracudaTrialsPlugin;
 import com.BarracudaTrials.config.Config;
-import com.BarracudaTrials.model.Trial;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
+import net.runelite.api.Perspective;
+import net.runelite.api.coords.LocalPoint;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -38,11 +39,6 @@ public class JubblyBoatOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (!plugin.isInTrial() || plugin.getCurrentTrial() != Trial.JUBBLY_JIVE)
-        {
-            return null;
-        }
-
         if (!plugin.shouldHighlightJubblyBoat())
         {
             return null;
@@ -60,7 +56,11 @@ public class JubblyBoatOverlay extends Overlay
             return null;
         }
 
-        Color outline = new Color(0, 255, 255, 180); // fallback cyan
+        Color outline = config.collectBoatColor();
+        if (outline == null)
+        {
+            outline = new Color(255, 215, 0, 160);
+        }
 
         Color fill = new Color(0, 0, 0, 70);
 
@@ -69,6 +69,26 @@ public class JubblyBoatOverlay extends Overlay
         graphics.fill(hull);
         graphics.setColor(outline);
         graphics.draw(hull);
+
+        // Collect text
+        LocalPoint lp = boat.getLocalLocation();
+        if (lp != null)
+        {
+            net.runelite.api.Point textLoc =
+                    Perspective.getCanvasTextLocation(client, graphics, lp, "Collect", 0);
+
+            if (textLoc != null)
+            {
+                Color text = config.collectBoatColor();
+                if (text == null)
+                {
+                    text = new Color(255, 215, 0, 160);
+                }
+
+                graphics.setColor(text);
+                graphics.drawString("Collect", textLoc.getX(), textLoc.getY());
+            }
+        }
 
         return null;
     }

@@ -1,0 +1,164 @@
+[
+  {
+    "regionId": 9006,
+    "regionX": 55,
+    "regionY": 46,
+    "z": 0,
+    "order": 1,
+    "pillar": 1,
+    "varbitId": 18412
+  },
+  {
+    "regionId": 9263,
+    "regionX": 6,
+    "regionY": 4,
+    "z": 0,
+    "order": 2,
+    "pillar": 2,
+    "varbitId": 18413
+  },
+  {
+    "regionId": 9518,
+    "regionX": 9,
+    "regionY": 11,
+    "z": 0,
+    "order": 3,
+    "pillar": 4,
+    "varbitId": 18415
+  },
+  {
+    "regionId": 9518,
+    "regionX": 56,
+    "regionY": 7,
+    "z": 0,
+    "order": 4,
+    "pillar": 5,
+    "varbitId": 18416
+  },
+  {
+    "regionId": 9518,
+    "regionX": 56,
+    "regionY": 54,
+    "z": 0,
+    "order": 5,
+    "pillar": 6,
+    "varbitId": 18417
+  },
+  {
+    "regionId": 9775,
+    "regionX": 11,
+    "regionY": 11,
+    "z": 0,
+    "order": 6,
+    "pillar": 7,
+    "varbitId": 18418
+  },
+  {
+    "regionId": 9518,
+    "regionX": 56,
+    "regionY": 7,
+    "z": 0,
+    "order": 7,
+    "pillar": 5,
+    "varbitId": 18416
+  },
+  {
+    "regionId": 9518,
+    "regionX": 9,
+    "regionY": 11,
+    "z": 0,
+    "order": 8,
+    "pillar": 4,
+    "varbitId": 18415
+  },
+  {
+    "regionId": 9262,
+    "regionX": 47,
+    "regionY": 57,
+    "z": 0,
+    "order": 9,
+    "pillar": 3,
+    "varbitId": 18414
+  },
+  {
+    "regionId": 9006,
+    "regionX": 55,
+    "regionY": 46,
+    "z": 0,
+    "order": 10,
+    "pillar": 1,
+    "varbitId": 18412
+  },
+  {
+    "regionId": 9518,
+    "regionX": 9,
+    "regionY": 11,
+    "z": 0,
+    "order": 11,
+    "pillar": 4,
+    "varbitId": 18415
+  },
+  {
+    "regionId": 9775,
+    "regionX": 11,
+    "regionY": 11,
+    "z": 0,
+    "order": 12,
+    "pillar": 7,
+    "varbitId": 18418
+  },
+  {
+    "regionId": 9518,
+    "regionX": 56,
+    "regionY": 54,
+    "z": 0,
+    "order": 13,
+    "pillar": 6,
+    "varbitId": 18417
+  },
+  {
+    "regionId": 9263,
+    "regionX": 6,
+    "regionY": 4,
+    "z": 0,
+    "order": 14,
+    "pillar": 2,
+    "varbitId": 18413
+  },
+  {
+    "regionId": 9262,
+    "regionX": 47,
+    "regionY": 57,
+    "z": 0,
+    "order": 15,
+    "pillar": 3,
+    "varbitId": 18414
+  },
+  {
+    "regionId": 9518,
+    "regionX": 56,
+    "regionY": 7,
+    "z": 0,
+    "order": 16,
+    "pillar": 5,
+    "varbitId": 18416
+  },
+  {
+    "regionId": 9518,
+    "regionX": 56,
+    "regionY": 54,
+    "z": 0,
+    "order": 17,
+    "pillar": 6,
+    "varbitId": 18417
+  },
+  {
+    "regionId": 9775,
+    "regionX": 11,
+    "regionY": 11,
+    "z": 0,
+    "order": 18,
+    "pillar": 7,
+    "varbitId": 18418
+  }
+]

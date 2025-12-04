@@ -9,6 +9,9 @@ import com.BarracudaTrials.util.JubblyPillarData;
 import com.google.common.collect.ImmutableMap;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
+import net.runelite.api.Perspective;
+import net.runelite.api.coords.LocalPoint;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.gameval.ObjectID;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -28,6 +31,39 @@ public class JubblyPillarOverlay extends Overlay
     private final Client client;
     private final BarracudaTrialsPlugin plugin;
     private final Config config;
+
+    private static final int JUBBLY_PILLAR_RANGE_RADIUS_TILES = 15;
+
+    private static boolean isInRangeShape(int dx, int dy, int radius)
+    {
+        int ax = Math.abs(dx);
+        int ay = Math.abs(dy);
+
+        if (ax > radius || ay > radius)
+        {
+            return false;
+        }
+
+        // base
+        int dist2 = ax * ax + ay * ay;
+        if (dist2 <= radius * radius)
+        {
+            return true;
+        }
+
+        // vertical
+        if (ax <= 1 && ay <= radius)
+        {
+            return true;
+        }
+        // horizontal
+        if (ay <= 1 && ax <= radius)
+        {
+            return true;
+        }
+
+        return false;
+    }
 
     private static final Map<Integer, Color> PILLAR_COLORS = ImmutableMap.<Integer, Color>builder()
             .put(ObjectID.SAILING_BT_JUBBLY_JIVE_PILLAR_CLICKBOX_1_PARENT, new Color(0xC8C628))
@@ -61,8 +97,14 @@ public class JubblyPillarOverlay extends Overlay
             return null;
         }
 
+        if (!config.showPillars())
+        {
+            return null;
+        }
+
         Trial trial = plugin.getCurrentTrial();
         Difficulty difficulty = plugin.getCurrentDifficulty();
+
         if (trial != Trial.JUBBLY_JIVE || difficulty == null)
         {
             return null;
@@ -91,7 +133,6 @@ public class JubblyPillarOverlay extends Overlay
                 variant = RouteVariant.WIKI;
         }
 
-        // Load JSON pillar route
         List<JubblyPillarData.PillarDef> route =
                 JubblyPillarData.getPillars(Trial.JUBBLY_JIVE, difficulty, variant);
 
@@ -126,12 +167,56 @@ public class JubblyPillarOverlay extends Overlay
         Color fill = new Color(0, 0, 0, 70);
 
         graphics.setStroke(new BasicStroke(2.0f));
+
+        //Pillar
         graphics.setColor(fill);
         graphics.fill(new Area(hull));
         graphics.setColor(outline);
         graphics.draw(hull);
 
-        // Pillar number
+        // Range circle
+        LocalPoint centerLp = pillarObj.getLocalLocation();
+        if (centerLp != null && config.showPillarsRange())
+        {
+            Area rangeArea = new Area();
+            int r = JUBBLY_PILLAR_RANGE_RADIUS_TILES;
+
+            for (int dy = -r; dy <= r; dy++)
+            {
+                for (int dx = -r; dx <= r; dx++)
+                {
+                    if (!isInRangeShape(dx, dy, r))
+                    {
+                        continue;
+                    }
+
+                    LocalPoint tileLp = new LocalPoint(
+                            centerLp.getX() + dx * Perspective.LOCAL_TILE_SIZE,
+                            centerLp.getY() + dy * Perspective.LOCAL_TILE_SIZE
+                    );
+
+                    Polygon tilePoly = Perspective.getCanvasTilePoly(client, tileLp);
+                    if (tilePoly != null)
+                    {
+                        rangeArea.add(new Area(tilePoly));
+                    }
+                }
+            }
+
+            Color rangeOutline = new Color(
+                    outline.getRed(),
+                    outline.getGreen(),
+                    outline.getBlue(),
+                    160 // alpha
+            );
+
+            //graphics.setColor(fill);
+            //graphics.fill(rangeArea);
+            graphics.setColor(rangeOutline);
+            graphics.draw(rangeArea);
+        }
+
+        // Order number
         String text = Integer.toString(target.order);
         net.runelite.api.Point txt = pillarObj.getCanvasTextLocation(graphics, text, 0);
         if (txt != null)

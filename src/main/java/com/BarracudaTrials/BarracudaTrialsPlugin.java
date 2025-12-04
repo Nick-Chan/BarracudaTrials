@@ -88,9 +88,15 @@ public class BarracudaTrialsPlugin extends Plugin
     private static final String CHAT_LUFF_SAIL = "You trim the sails, catching the wind for a burst of speed!";
     private static final String CHAT_LUFF_STORED = "You release the wind mote for a burst of speed!";
 
-    // Jubbly Jive pillar route state
+    // Jubbly Jive
+    private static final int VARBIT_LOST_SUPPLY_TRIGGER_JJ1 = 18468;
+    private static final int VARBIT_LOST_SUPPLY_TRIGGER_JJ2 = 18484;
+    private static final int VARBIT_LOST_SUPPLY_TRIGGER_JJ3 = 18469;
+
     private List<JubblyPillarData.PillarDef> jubblyPillarRoute = Collections.emptyList();
     private int currentJubblyPillarOrder = 0;
+    private int jubblyRound = 0; // Marlin: 0 = no wave active, 1 = first balloon-toad wave, 2 = second wave
+    private int jubblyPillarIndex = 1;
 
     private final java.util.Map<Integer, GameObject> jubblyPillarObjects = new java.util.HashMap<>();
 
@@ -113,7 +119,24 @@ public class BarracudaTrialsPlugin extends Plugin
         PILLAR_OBJECT_TO_INDEX.put(ObjectID.SAILING_BT_JUBBLY_JIVE_PILLAR_CLICKBOX_7_PARENT, 7);
     }
 
-    private static final int JUBBLY_BOAT_OBJECT_ID = 59170;
+    private static final int[] JUBBLY_BOAT_IDS = {
+            ObjectID.SAILING_BT_JUBBLY_JIVE_TOAD_SUPPLIES_PARENT,
+            ObjectID.SAILING_BT_JUBBLY_JIVE_TOAD_SUPPLIES_CHILD,
+            ObjectID.SAILING_BT_JUBBLY_JIVE_TOAD_SUPPLIES_CHILD_NOOP
+    };
+
+    private static boolean isJubblyBoatId(int id)
+    {
+        for (int v : JUBBLY_BOAT_IDS)
+        {
+            if (v == id)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private GameObject jubblyBoatObject;
     private boolean jubblyBoatHighlightActive = false;
 
@@ -226,7 +249,6 @@ public class BarracudaTrialsPlugin extends Plugin
         if (e.getWorldView().isTopLevel())
         {
             lostSupplies.clear();
-            jubblyBoatObject = null;
         }
     }
 
@@ -235,23 +257,8 @@ public class BarracudaTrialsPlugin extends Plugin
     {
         GameObject o = e.getGameObject();
 
-        // DEBUG: log *any* 59170
-        if (o.getId() == 59170)
-        {
-            client.addChatMessage(
-                    ChatMessageType.GAMEMESSAGE,
-                    "",
-                    "DEBUG: Jubbly boat candidate spawned id=59170 at " +
-                            o.getWorldLocation(),
-                    null
-            );
-        }
-
-        // Only track objects we know about from the Lost Supplies overlay metadata
-        if (LostSuppliesOverlay.hasMetaForId(o.getId()))
-        {
-            lostSupplies.add(o);
-        }
+        // Lost supplies
+        lostSupplies.add(o);
 
         if (client.getLocalPlayer() == null)
         {
@@ -267,27 +274,17 @@ public class BarracudaTrialsPlugin extends Plugin
 
         ship.updateFromGameObject(e.getGameObject());
 
+        // Jubbly boat
+        if (isJubblyBoatId(o.getId()))
+        {
+            jubblyBoatObject = o;
+        }
+
+        // Jubbly pilars
         Integer pillarIdx = PILLAR_OBJECT_TO_INDEX.get(o.getId());
         if (pillarIdx != null)
         {
             jubblyPillarObjects.put(pillarIdx, o);
-        }
-
-        // DEBUG tracking for boat
-        if (o.getId() == 59170)
-        {
-            jubblyBoatObject = o;
-            client.addChatMessage(
-                    ChatMessageType.GAMEMESSAGE,
-                    "",
-                    "DEBUG: jubblyBoatObject set",
-                    null
-            );
-        }
-
-        if (o.getId() == JUBBLY_BOAT_OBJECT_ID)
-        {
-            jubblyBoatObject = o;
         }
     }
 
@@ -382,6 +379,8 @@ public class BarracudaTrialsPlugin extends Plugin
             jubblyPillarRoute = Collections.emptyList();
             currentJubblyPillarOrder = 0;
             jubblyBoatHighlightActive = false;
+            jubblyRound = 0;
+            jubblyPillarIndex = 0;
         }
 
         lastTimeStart = timeStart;
@@ -404,37 +403,70 @@ public class BarracudaTrialsPlugin extends Plugin
 
         if (inTrial
                 && currentTrial == Trial.JUBBLY_JIVE
-                && currentJubblyPillarOrder > 0
+                && jubblyPillarIndex >= 0
                 && !jubblyPillarRoute.isEmpty())
         {
-            // Find the currently highlighted pillar
-            JubblyPillarData.PillarDef current = jubblyPillarRoute.stream()
-                    .filter(p -> p.order == currentJubblyPillarOrder)
-                    .findFirst()
-                    .orElse(null);
+            JubblyPillarData.PillarDef current = jubblyPillarRoute.get(jubblyPillarIndex);
 
-            if (current != null && varbitId == current.varbitId)
+            if (varbitId == current.varbitId)
             {
-                // Varbit 2+ = done
                 if (newVal >= 2)
                 {
-                    int idx = jubblyPillarRoute.indexOf(current);
+                    jubblyPillarIndex++;
 
-                    if (idx >= 0 && idx + 1 < jubblyPillarRoute.size())
+                    int maxOrderForThisWave;
+                    Difficulty diff = getCurrentDifficulty();
+
+                    if (diff == Difficulty.MARLIN && jubblyRound == 1)
                     {
-                        // Move to next pillar
-                        currentJubblyPillarOrder = jubblyPillarRoute.get(idx + 1).order;
+                        maxOrderForThisWave = 9;
                     }
                     else
                     {
-                        // No more pillars
+                        maxOrderForThisWave = Integer.MAX_VALUE;
+                    }
+
+                    if (jubblyPillarIndex < jubblyPillarRoute.size())
+                    {
+                        JubblyPillarData.PillarDef next = jubblyPillarRoute.get(jubblyPillarIndex);
+
+                        if (next.order <= maxOrderForThisWave)
+                        {
+                            currentJubblyPillarOrder = next.order;
+                        }
+                        else
+                        {
+                            currentJubblyPillarOrder = 0;
+                            jubblyPillarIndex = -1;
+                        }
+                    }
+                    else
+                    {
                         currentJubblyPillarOrder = 0;
+                        jubblyPillarIndex = -1;
                     }
                 }
             }
+
+            Difficulty currentDifficulty = getCurrentDifficulty();
+            if (currentDifficulty == Difficulty.SHARK && varbitId == VARBIT_LOST_SUPPLY_TRIGGER_JJ1)
+            {
+                currentSplit++;
+                currentRouteOrder++;
+            }
+            if (currentDifficulty == Difficulty.MARLIN && varbitId == VARBIT_LOST_SUPPLY_TRIGGER_JJ2)
+            {
+                currentSplit++;
+                currentRouteOrder++;
+            }
+            if (currentDifficulty == Difficulty.MARLIN && varbitId == VARBIT_LOST_SUPPLY_TRIGGER_JJ3)
+            {
+                currentSplit++;
+                currentRouteOrder++;
+            }
         }
 
-/*
+        /*/ DEBUG
         int id = event.getVarbitId();
         int value = event.getValue();
 
@@ -509,7 +541,7 @@ public class BarracudaTrialsPlugin extends Plugin
             speedBoostTicksMax = durationTicks;
         }
 
-        if (message.equals("You successfully lure a jubby to Gurtob!"))
+        if (message.startsWith("You successfully lure a jubbly to Gurtob"))
         {
             if (currentTrial == Trial.JUBBLY_JIVE && inTrial)
             {
@@ -540,22 +572,70 @@ public class BarracudaTrialsPlugin extends Plugin
                             variant = RouteVariant.WIKI;
                     }
 
-                    jubblyPillarRoute =
-                            JubblyPillarData.getPillars(Trial.JUBBLY_JIVE, diff, variant);
+                    // Load the pillar route once
+                    if (jubblyPillarRoute.isEmpty())
+                    {
+                        jubblyPillarRoute = JubblyPillarData.getPillars(Trial.JUBBLY_JIVE, diff, variant);
+                    }
 
                     if (jubblyPillarRoute.isEmpty())
                     {
                         currentJubblyPillarOrder = 0;
+                        jubblyPillarIndex = -1;
+                        return;
+                    }
+
+                    // Wave logic
+                    if (diff == Difficulty.MARLIN)
+                    {
+                        if (jubblyRound < 2)
+                        {
+                            jubblyRound++;
+                        }
                     }
                     else
                     {
-                        // highlight the first pillar
-                        recalcCurrentJubblyPillarOrder();
+                        jubblyRound = 1;
+                    }
+
+                    if (jubblyRound == 1)
+                    {
+                        jubblyPillarIndex = -1;
+                        for (int i = 0; i < jubblyPillarRoute.size(); i++)
+                        {
+                            if (jubblyPillarRoute.get(i).order >= 1 &&
+                                    jubblyPillarRoute.get(i).order <= 9)
+                            {
+                                jubblyPillarIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        jubblyPillarIndex = -1;
+                        for (int i = 0; i < jubblyPillarRoute.size(); i++)
+                        {
+                            if (jubblyPillarRoute.get(i).order >= 10 &&
+                                    jubblyPillarRoute.get(i).order <= 18)
+                            {
+                                jubblyPillarIndex = i;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (jubblyPillarIndex >= 0)
+                    {
+                        currentJubblyPillarOrder = jubblyPillarRoute.get(jubblyPillarIndex).order;
+                    }
+                    else
+                    {
+                        currentJubblyPillarOrder = 0;
                     }
                 }
             }
         }
-
 
         // Gwenith Glide
         if (currentTrial == Trial.GWENITH_GLIDE)
@@ -625,25 +705,58 @@ public class BarracudaTrialsPlugin extends Plugin
         if (!inTrial || currentTrial != Trial.JUBBLY_JIVE || jubblyPillarRoute.isEmpty())
         {
             currentJubblyPillarOrder = 0;
+            jubblyPillarIndex = -1;
             return;
         }
 
-        // Find the first pillar in the route whose varbit state is NOT fully done
-        // With states: 0 = inactive, 1 = active, 2 = clicked, 3 = jubbly in tree
-        // We treat 2 & 3 as "done" and 0 or 1 as "next/active target".
-        for (JubblyPillarData.PillarDef def : jubblyPillarRoute)
+        // No active wave
+        if (jubblyRound <= 0)
         {
-            int state = client.getVarbitValue(def.varbitId);
-            if (state <= 1) // 0 or 1 -> not finished yet
+            currentJubblyPillarOrder = 0;
+            jubblyPillarIndex = -1;
+            return;
+        }
+
+        if (jubblyPillarIndex >= 0 && jubblyPillarIndex < jubblyPillarRoute.size())
+        {
+            currentJubblyPillarOrder = jubblyPillarRoute.get(jubblyPillarIndex).order;
+            return;
+        }
+
+        int minOrder;
+        int maxOrder;
+
+        // Wave 1: orders 1–9
+        if (jubblyRound == 1)
+        {
+            minOrder = 1;
+            maxOrder = 9;
+        }
+        // Wave 2: orders 10–18
+        else
+        {
+            minOrder = 10;
+            maxOrder = 18;
+        }
+
+        jubblyPillarIndex = -1;
+
+        for (int i = 0; i < jubblyPillarRoute.size(); i++)
+        {
+            JubblyPillarData.PillarDef def = jubblyPillarRoute.get(i);
+            if (def.order < minOrder || def.order > maxOrder)
             {
-                currentJubblyPillarOrder = def.order;
-                return;
+                continue;
             }
+
+            jubblyPillarIndex = i;
+            currentJubblyPillarOrder = def.order;
+            return;
         }
 
         currentJubblyPillarOrder = 0;
+        jubblyPillarIndex = -1;
     }
-
 
     // Trial / Difficulty for overlays
     public Trial getCurrentTrial()

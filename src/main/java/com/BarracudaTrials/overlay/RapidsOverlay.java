@@ -104,7 +104,7 @@ public class RapidsOverlay extends Overlay
             return null;
         }
 
-        int tileRadius = config.rapidsSmallHighlight() ? 1 : 3;
+        int tileRadius = 3;
 
         Color outline = config.rapidsColor();
         if (outline == null)
